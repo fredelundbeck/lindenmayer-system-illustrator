@@ -1,21 +1,24 @@
-class lsystem:
-    def __init__(self, axiom, ruleset):
+from turtle import *
+
+class LSystem:
+    def __init__(self, axiom, rules):
         self.axiom = axiom
-        self.ruleset = ruleset
-        self.current_gen = axiom
-    
-    def __iter__(self):
-        return self
+        self.rules = rules
+        self.current_iteration = axiom
     
     def __next__(self):
-        next_gen = ''
-        for c in self.current_gen:
-            for letter, evolution  in self.ruleset:
-                if letter == c:
-                    next_gen += evolution
-                    break
-        self.current_gen = next_gen
-        return self.current_gen
+        temp_current = ''
+        for char in self.current_iteration:
+            found = False
+            for char_r, next_r  in self.rules:
+                if char == char_r:
+                    found = True
+                    temp_current += next_r
+            if not found:
+                temp_current += char
 
-lindenmayer = lsystem('F', [('F', 'FF+[F-F-F]-[-F+F+F]')])
+        self.current_iteration = temp_current
+        return self.current_iteration
 
+    def __str__(self):
+        return self.current_iteration
