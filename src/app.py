@@ -7,9 +7,11 @@ COLOR_MAIN_LIGHT  = "#e7eff6"
 COLOR_MAIN_DARK   = "#4b86b4"
 COLOR_MAIN_DARKER = "#2a4d69"
 
-GENERAL_FONT_SIZE = 9
+LABEL_FRAME_FONT = ("", 12, "bold")
+LABEL_FONT = ("", 11)
 
 #### setup window ####
+
 window = tk.Tk()
 window.geometry("950x600")
 window.title("Lindenmeyer Systems Illustrator")
@@ -53,6 +55,7 @@ var_labelframe = tk.LabelFrame(left_frame)
 var_labelframe["text"] = "Variables"
 var_labelframe["background"] = COLOR_MAIN_DARKER
 var_labelframe["foreground"] = COLOR_MAIN_LIGHT
+var_labelframe["font"] = LABEL_FRAME_FONT
 var_labelframe.place(relx = 0.01, rely = 0, relwidth = 0.98, relheight = 0.4)
 
 #### variables treeview ####
@@ -88,7 +91,7 @@ var_treeview.configure(yscrollcommand = var_treeview_scrollbar.set)
 #### variable entry label ####
 var_label = tk.Label(var_labelframe)
 var_label["text"] = "var:"
-var_label["font"] = GENERAL_FONT_SIZE
+var_label["font"] = LABEL_FONT
 var_label["background"] = COLOR_MAIN_DARKER
 var_label["foreground"] = COLOR_MAIN_LIGHT
 var_label.place(relx = 0.02, rely = 0.66)
@@ -102,7 +105,7 @@ var_entry.place(relx = 0.12, rely = 0.67, relwidth=0.1)
 
 func_label = tk.Label(var_labelframe)
 func_label["text"] = "f(x):"
-func_label["font"] = GENERAL_FONT_SIZE
+func_label["font"] = LABEL_FONT
 func_label["background"] = COLOR_MAIN_DARKER
 func_label["foreground"] = COLOR_MAIN_LIGHT
 func_label.place(relx = 0.26, rely = 0.66)
@@ -114,14 +117,30 @@ func_combobox["values"] = ("MOVE", "ROTATE", "SAVE", "LOAD")
 func_combobox["state"] = "readonly"
 func_combobox.place(relx = 0.36, rely = 0.67, relwidth = 0.3)
 
+#### value entry ####
+
+value_entry = tk.Entry(var_labelframe)
+ 
+
 #### submit variable button ####
 
+def can_insert_var():
+    if len(var_entry.get()) == 1 and func_combobox.get() != "":
+        return True
+    else:
+        return False
+
 def button_clicked_event(btn_event_args):
-    pass
+    if can_insert_var():
+        var = var_entry.get()
+        func = func_combobox.get()
+        var_treeview.insert("", "end", text = var, values = (func), tags = "even")
+        
+    
 
 submit_var_btn = tk.Button(var_labelframe)
 submit_var_btn["text"] = "Insert"
-submit_var_btn["font"] = GENERAL_FONT_SIZE
+submit_var_btn["font"] = LABEL_FONT
 submit_var_btn.bind("<Button-1>", button_clicked_event)
 submit_var_btn.place(relx = 0.83, rely = 0.835) 
 
