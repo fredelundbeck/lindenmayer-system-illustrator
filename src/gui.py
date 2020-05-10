@@ -2,14 +2,12 @@ import tkinter as tk
 import tkinter.ttk as ttk
 
 class VariableInputs(tk.Frame):
-    
     def __init__(self, master = None, treeview = None, **kw):
         super().__init__(master, **kw)
 
         self.__initialize_sub_widgets()
     
     def __initialize_sub_widgets(self):
-        
         #labelframe
         self.labelframe = tk.LabelFrame(self, text = "Variables", font = ("", 9, "bold"), padx = 10, pady = 10)
 
@@ -54,57 +52,60 @@ class VariableInputs(tk.Frame):
         self.labelframe.pack()
     
     def __update_submit_button_state(self):
-        
-        if len(self.var_entry.get()) > 0 and len(self.value_entry.get()) > 0 and self.func_combobox.get() is not "":
+        if len(self.var_entry.get()) > 0 and len(self.value_entry.get()) > 0 and self.func_combobox.get() != "":
             self.submit_button["state"] = "active"
         else:
             self.submit_button["state"] = "disabled"
 
     def __submit_button_clicked(self):
-
         treeview.insert_variable(self.var_entry.get(), self.func_combobox.get(), self.value_entry.get())
     
     def __func_combobox_picked(self, picked_args):
-
         self.__update_submit_button_state() 
 
     def __value_entry_key_pressed(self, keyinfo_args):
-
         self.__update_submit_button_state()
         
             
 
     def __var_entry_key_pressed(self, keyinfo_args):
-        
         if len(self.var_entry.get()) > 0:
             self.var_entry.delete(1, tk.END)
 
         self.__update_submit_button_state()    
 
 class VariablesTreeview(tk.Frame):
-    
     def __init__(self, master = None, **kw):
         super().__init__(master, **kw)
 
         self.__initialize_sub_widgets()
 
     def __initialize_sub_widgets(self):
-        
+        #Frame for treeview
         self.treeview_frame = tk.Frame(self)
+
         #Treeview
-        self.treeview = ttk.Treeview(self.treeview_frame, columns = ["var", "function", "value"], show = "headings")
+        self.treeview = ttk.Treeview(self.treeview_frame, 
+                                    columns = ["var", "function", "value"], 
+                                    show = "headings",
+                                    height = 5)
+
         self.treeview.heading("var", text = "var")
         self.treeview.heading("function", text = "f(x)")
         self.treeview.heading("value", text = "value")
 
         #Buttons & frame
         self.buttons_frame = tk.Frame(self)
-        self.delete_button = tk.Button(self.buttons_frame, text = "delete")
+        self.delete_button = tk.Button(self.buttons_frame, 
+                                        text = "delete", 
+                                        command = self.delete_button_clicked_event)
+
         self.edit_button = tk.Button(self.buttons_frame, text = "edit")
         
         #Placement
         self.treeview_frame.pack()
         self.treeview.pack(padx = 5, pady = 5)
+
 
         self.buttons_frame.pack(fill = "x", padx = 5, pady = 5)
         self.delete_button.grid(column = 0, row = 0)
@@ -112,17 +113,53 @@ class VariablesTreeview(tk.Frame):
 
     
     def insert_variable(self, var, func, value):
-
         self.treeview.insert("", tk.END, values = (var, func, value))
     
+    def delete_button_clicked_event(self):
+        item = self.treeview.focus()
+        if item != "":
+            self.treeview.delete(item)
 
+class StartRules(tk.Frame):
+    def __init__(self, master=None, **kw):
+        super().__init__(master=master, **kw)
+
+        self.__initialize_sub_widgets()
+
+    def __initialize_sub_widgets(self):
+
+        #Widgets
+        self.input_labelframe = tk.LabelFrame(self, text = "Rules",
+                                        font = ("", 9, "bold"), 
+                                        padx = 10,
+                                        pady = 10)
+        self.input_frame = tk.Frame(self.input_labelframe, pady = 10)
+        self.var_label = tk.Label(self.input_frame, text = "var:")
+        self.var_entry = tk.Entry(self.input_frame, width = 5)
+        self.equal_label = tk.Label(self.input_frame, text = "=")
+        self.mutation_entry = tk.Entry(self.input_frame)
+        self.add_button = tk.Button(self.input_labelframe, text = "add rule", width = 15)
+
+        #Placement
+        self.input_labelframe.pack()
+        self.input_frame.pack()
+        self.var_label.grid(column = 0, row = 0)
+        self.var_entry.grid(column = 1, row = 0)
+        self.equal_label.grid(column = 2, row = 0)
+        self.mutation_entry.grid(column = 3, row = 0)
+        self.add_button.pack()
 
 
 app = tk.Tk()
 
 variables = VariableInputs(app)
-variables.pack()
 treeview = VariablesTreeview(app)
+
+
+
+startrules = StartRules(app, pady = 10)
+variables.pack()
 treeview.pack()
+startrules.pack()
 
 app.mainloop()
