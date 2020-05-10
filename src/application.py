@@ -1,7 +1,12 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+import re as regex
+import utilities as util
 
 class VariablesFrame(tk.Frame):
+    '''
+    This frame holds the entries & submit button widgets for the variables list.
+    '''
     def __init__(self, master=None, **kw):
         super().__init__(master=master, **kw)
 
@@ -23,11 +28,15 @@ class VariablesFrame(tk.Frame):
                                             state = "readonly",
                                             width = 17)
         #Setup submit button
-        self.submit_button = tk.Button(self.submit_frame, text = "submit", width = 21)
+        self.submit_button = tk.Button(self.submit_frame, text = "submit", width = 21, state = tk.DISABLED)
 
         #Event bindings
         self.func_combobox.bind("<<ComboboxSelected>>", self.func_selection_event)
+        self.func_combobox.bind("<<ComboboxSelected>>", self.update_submit_button, add = "+")
         self.var_entry.bind("<KeyRelease>", self.var_key_released_event)
+        self.var_entry.bind("<KeyRelease>", self.update_submit_button, add = "+")
+        self.val_entry.bind("<KeyRelease>", self.val_key_released_event)
+        self.val_entry.bind("<KeyRelease>", self.update_submit_button, add = "+")
 
         #Placement
         self.label_frame.pack(padx = 5, pady = 5)
@@ -47,7 +56,7 @@ class VariablesFrame(tk.Frame):
     def var_key_released_event(self, args):
         '''
         Checks if entry has more than one char,
-        if it has delete everything but the first char
+        if it has delete everything but the first char.
         '''
         if len(self.var_entry.get()) > 1:
             self.var_entry.delete(1, tk.END)
@@ -55,7 +64,7 @@ class VariablesFrame(tk.Frame):
     def func_selection_event(self, args):
         '''
         Checks whether LOAD or SAVE has been selected,
-        if it has then disable the val_entry else enable it
+        if it has then disable the val_entry else enable it.
         '''
         item = self.func_combobox.get()
         if item == "Save" or item == "Load":
@@ -63,8 +72,33 @@ class VariablesFrame(tk.Frame):
             self.val_entry["state"] = tk.DISABLED
         else:
             self.val_entry["state"] = tk.NORMAL
-        
+    
+    def val_key_released_event(self, args):
+        '''
+        Checks if the value entry text can be converted to a number.
+        If not it highlights the value entry background with red.
+        '''
+        value = self.val_entry.get()
+        if util.isdigit(value) or value == "":
+            self.val_entry["bg"] = "#FFFFFF"
+        else:
+            self.val_entry["bg"] = "#FFAAAA"
+    
+    def update_submit_button(self, args):
+        '''
+        Checks if all requirements are met to enable the submit button.
+        The requirements are:
+        1.  That both the variable & value entries length must exceed 0. 
+        2.  The function combobox must have a selected item.
+        '''
+        var_entry_len = len(self.var_entry.get())
+        func_item = self.func_combobox.get()
+        val_entry_isdigit = util.isdigit(self.val_entry.get())
 
+        if var_entry_len > 0 and func_item != "" and (val_entry_isdigit or func_item in ["Save", "Load"]):
+            self.submit_button["state"] = tk.NORMAL
+        else:
+            self.submit_button["state"] = tk.DISABLED
 
 
 app = tk.Tk()
