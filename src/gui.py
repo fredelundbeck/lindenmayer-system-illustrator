@@ -107,9 +107,9 @@ class VariablesTreeview(tk.Frame):
         self.treeview.pack(padx = 5, pady = 5)
 
 
-        self.buttons_frame.pack(fill = "x", padx = 5, pady = 5)
+        self.buttons_frame.pack(fill = "x", padx = 5)
         self.delete_button.grid(column = 0, row = 0)
-        self.edit_button.grid(column = 2, row = 0, padx = 5)
+        self.edit_button.grid(column = 2, row = 0, padx = 3)
 
     
     def insert_variable(self, var, func, value):
@@ -129,10 +129,16 @@ class StartRules(tk.Frame):
     def __initialize_sub_widgets(self):
 
         #Widgets
-        self.input_labelframe = tk.LabelFrame(self, text = "Rules",
+        self.main_frame = tk.Frame(self)
+
+        self.rules_list_frame = tk.Frame(self.main_frame, padx = 10)
+
+        #Input label frame
+        self.input_labelframe = tk.LabelFrame(self.main_frame, text = "Rules",
                                         font = ("", 9, "bold"), 
                                         padx = 10,
                                         pady = 10)
+                                        
         self.input_frame = tk.Frame(self.input_labelframe, pady = 10)
         self.var_label = tk.Label(self.input_frame, text = "var:")
         self.var_entry = tk.Entry(self.input_frame, width = 5)
@@ -140,8 +146,16 @@ class StartRules(tk.Frame):
         self.mutation_entry = tk.Entry(self.input_frame)
         self.add_button = tk.Button(self.input_labelframe, text = "add rule", width = 15)
 
+        #Rules list
+        self.rules_list = tk.Listbox(self.rules_list_frame, height = 7)
+
         #Placement
-        self.input_labelframe.pack()
+        self.main_frame.pack()
+
+        self.input_labelframe.grid(column = 0, row = 0)
+        self.rules_list_frame.grid(column = 1, row = 0)
+        self.rules_list.pack()
+
         self.input_frame.pack()
         self.var_label.grid(column = 0, row = 0)
         self.var_entry.grid(column = 1, row = 0)
@@ -149,13 +163,9 @@ class StartRules(tk.Frame):
         self.mutation_entry.grid(column = 3, row = 0)
         self.add_button.pack()
 
-
 app = tk.Tk()
-
 variables = VariableInputs(app)
 treeview = VariablesTreeview(app)
-
-
 
 startrules = StartRules(app, pady = 10)
 variables.pack()
