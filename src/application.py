@@ -7,8 +7,11 @@ class VariablesFrame(tk.Frame):
     '''
     This frame holds the entries & submit button widgets for the variables list.
     '''
-    def __init__(self, master=None, **kw):
+    def __init__(self, master=None, varlist = None, **kw):
         super().__init__(master=master, **kw)
+
+        #Setup references
+        self.varlist = varlist
 
         #Setup frames
         self.label_frame = tk.LabelFrame(self, text = "Variables", font = ("", 9, "bold"))
@@ -28,15 +31,18 @@ class VariablesFrame(tk.Frame):
                                             state = "readonly",
                                             width = 17)
         #Setup submit button
-        self.submit_button = tk.Button(self.submit_frame, text = "submit", width = 21, state = tk.DISABLED)
+        self.submit_button = tk.Button(self.submit_frame, 
+                                        text = "submit", 
+                                        width = 21, state = tk.DISABLED, 
+                                        command = self.submit_button_clicked_event)
 
         #Event bindings
         self.func_combobox.bind("<<ComboboxSelected>>", self.func_selection_event)
-        self.func_combobox.bind("<<ComboboxSelected>>", self.update_submit_button, add = "+")
+        self.func_combobox.bind("<<ComboboxSelected>>", self.update_submit_button_state, add = "+")
         self.var_entry.bind("<KeyRelease>", self.var_key_released_event)
-        self.var_entry.bind("<KeyRelease>", self.update_submit_button, add = "+")
+        self.var_entry.bind("<KeyRelease>", self.update_submit_button_state, add = "+")
         self.val_entry.bind("<KeyRelease>", self.val_key_released_event)
-        self.val_entry.bind("<KeyRelease>", self.update_submit_button, add = "+")
+        self.val_entry.bind("<KeyRelease>", self.update_submit_button_state, add = "+")
 
         #Placement
         self.label_frame.pack(padx = 5, pady = 5)
@@ -84,26 +90,145 @@ class VariablesFrame(tk.Frame):
         else:
             self.val_entry["bg"] = "#FFAAAA"
     
-    def update_submit_button(self, args):
+    def update_submit_button_state(self, args):
         '''
         Checks if all requirements are met to enable the submit button.
         The requirements are:
         1.  That both the variable & value entries length must exceed 0. 
         2.  The function combobox must have a selected item.
         '''
-        var_entry_len = len(self.var_entry.get())
+        var_length = len(self.var_entry.get())
         func_item = self.func_combobox.get()
-        val_entry_isdigit = util.isdigit(self.val_entry.get())
+        val_isdigit = util.isdigit(self.val_entry.get())
 
-        if var_entry_len > 0 and func_item != "" and (val_entry_isdigit or func_item in ["Save", "Load"]):
+        if var_length > 0 and func_item != "" and (val_isdigit or func_item in ["Save", "Load"]):
             self.submit_button["state"] = tk.NORMAL
         else:
             self.submit_button["state"] = tk.DISABLED
+    
+    def submit_button_clicked_event(self):
+        '''
+        Inserts the variable data (var-name, func, value) to the variable list widget.
+        '''
+        var = self.var_entry.get()
+        func = self.func_combobox.get()
+        val = self.val_entry.get()
+
+        self.varlist.insert_variable(var, func, val)
+
+
+class VariableTreeViewFrame(tk.Frame):
+    '''
+    This frame holds the treeview that displays all the variables. Also,
+    it holds buttons for deleting or editing functionality.
+    '''
+    def __init__(self, master=None, **kw):
+        super().__init__(master=master, **kw)
+
+        #Setup frames
+        self.treeview_frame = tk.Frame(self)
+        self.buttons_frame = tk.Frame(self)
+
+        #Setup buttons
+        self.remove_button = tk.Button(self.buttons_frame, 
+                                        text = "remove", 
+                                        state = tk.DISABLED,
+                                        command = self.remove_button_clicked_event)
+        self.edit_button = tk.Button(self.buttons_frame, 
+                                        text = "edit", 
+                                        state = tk.DISABLED,
+                                        command = self.edit_button_clicked_event)
+
+        #Setup treeview
+        self.treeview = ttk.Treeview(self.treeview_frame, 
+                                        columns = ["var", "function", "value"], 
+                                        show = "headings",
+                                        selectmode = "browse",
+                                        height = 5)
+        self.treeview.heading("var", text = "var")
+        self.treeview.heading("function", text = "f(x)")
+        self.treeview.heading("value", text = "value")
+
+        #Setup treeview vertical scrollbar
+        self.treeview_scrollbar = tk.Scrollbar(self.treeview_frame, 
+                                                orient = tk.VERTICAL, 
+                                                command = self.treeview.yview)
+        self.treeview.configure(yscrollcommand = self.treeview_scrollbar.set)
+
+        #Event bindings
+        self.treeview.bind("<<TreeviewSelect>>", self.treeview_item_selected_event)
+
+        #Adjust grid weights
+        self.treeview_frame.columnconfigure(0, weight = 1)
+        self.treeview_frame.columnconfigure(1, weight = 0)
+
+        #Placement
+        self.treeview_frame.pack(padx = 5, pady = 5)
+        self.buttons_frame.pack(padx = 5, pady = (0, 5), fill = tk.X)
+
+        self.treeview.grid(column = 0, row = 0, sticky = tk.W + tk.E)
+        self.treeview_scrollbar.grid(column = 1, row = 0, sticky = tk.N + tk.S + tk.W + tk.E)
+
+        self.remove_button.grid(column = 0, row = 0, padx = (0, 5))
+        self.edit_button.grid(column = 1, row = 0)
+
+    def insert_variable(self, var, func, val):
+        '''
+        Inserts the given parameters into the treeview
+        '''
+        self.treeview.insert("", tk.END, values = [var, func, val])
+
+    def change_buttons_states(self, state):
+        '''
+        Changes both the remove & edit buttons states to the given state argument
+        '''
+        self.remove_button["state"] = state
+        self.edit_button["state"] = state
+
+    def treeview_item_selected_event(self, args):
+        '''
+        If an item from the treeview is selected the delete & edit buttons state
+        will be set to NORMAL, making them able to be clicked.
+        '''
+        self.change_buttons_states(tk.NORMAL)
+
+    def remove_button_clicked_event(self):
+        '''
+        First the function removes the selected item/variable from the treeview.
+        After that it changes the state of both the buttons - remove & edit - to disabled.
+        '''
+        selected_item = self.treeview.selection()[0]
+        self.treeview.delete(selected_item)
+        self.change_buttons_states(tk.DISABLED)
+
+    def edit_button_clicked_event(self):
+        '''
+        Open a temporary window with widgets to edit the selected item/variable
+        from the treeview.
+        '''
+        pass
+
+class RulesFrame(tk.Frame):
+    def __init__(self, master = None, varlist = None, **kw):
+        super().__init__(master=master, **kw)
+
+        #Setup frames
+        
+        #Setup buttons
+
+        #Setup event bindings
+
+        #Placement
 
 
 app = tk.Tk()
 
-variables = VariablesFrame(app)
+#declare widgets test
+varlist = VariableTreeViewFrame(app)
+variables = VariablesFrame(app, varlist)
+
+#pack test
 variables.pack()
+varlist.pack()
 
 app.mainloop()
