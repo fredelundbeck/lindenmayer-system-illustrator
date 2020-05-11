@@ -7,11 +7,8 @@ class VariablesFrame(tk.Frame):
     '''
     This frame holds the entries & submit button widgets for the variables list.
     '''
-    def __init__(self, master=None, varlist = None, **kw):
+    def __init__(self, master=None, **kw):
         super().__init__(master=master, **kw)
-
-        #Setup references
-        self.varlist = varlist
 
         #Setup frames
         self.label_frame = tk.LabelFrame(self, text = "Variables", font = ("", 9, "bold"))
@@ -33,7 +30,7 @@ class VariablesFrame(tk.Frame):
         #Setup submit button
         self.submit_button = tk.Button(self.submit_frame, 
                                         text = "submit", 
-                                        width = 21, state = tk.DISABLED, 
+                                        width = 21, state = tk.DISABLED,
                                         command = self.submit_button_clicked_event)
 
         #Event bindings
@@ -59,6 +56,10 @@ class VariablesFrame(tk.Frame):
 
         self.submit_button.pack(pady = (0, 6))
 
+    def set_instances(self, variable_treeview_frame, rules_frame):
+        self.var_treeview_obj = variable_treeview_frame
+        self.rules_frame_obj = rules_frame
+    
     def var_key_released_event(self, args):
         '''
         Checks if entry has more than one char,
@@ -114,8 +115,8 @@ class VariablesFrame(tk.Frame):
         func = self.func_combobox.get()
         val = self.val_entry.get()
 
-        self.varlist.insert_variable(var, func, val)
-
+        self.var_treeview_obj.insert_variable(var, func, val)
+        self.rules_frame_obj.update_combobox_values()
 
 class VariableTreeViewFrame(tk.Frame):
     '''
@@ -172,6 +173,9 @@ class VariableTreeViewFrame(tk.Frame):
         self.remove_button.grid(column = 0, row = 0, padx = (0, 5))
         self.edit_button.grid(column = 1, row = 0)
 
+    def set_instances(self, rules_frame):
+        self.rules_frame_obj = rules_frame
+
     def insert_variable(self, var, func, val):
         '''
         Inserts the given parameters into the treeview
@@ -201,6 +205,8 @@ class VariableTreeViewFrame(tk.Frame):
         self.treeview.delete(selected_item)
         self.change_buttons_states(tk.DISABLED)
 
+        self.rules_frame_obj.update_combobox_values()
+
     def edit_button_clicked_event(self):
         '''
         Open a temporary window with widgets to edit the selected item/variable
@@ -208,27 +214,74 @@ class VariableTreeViewFrame(tk.Frame):
         '''
         pass
 
+    def get_tree_rows_data(self, column_index):
+        '''
+        Returns all the data from the specified column name, from the treeview. 
+        '''
+        data = []
+        for child in self.treeview.get_children():
+            data.append(self.treeview.item(child)["values"][column_index])
+        return data
+    
+
 class RulesFrame(tk.Frame):
-    def __init__(self, master = None, varlist = None, **kw):
-        super().__init__(master=master, **kw)
+    def __init__(self, master = None, **kw):
+        super().__init__(master = master, **kw)
 
         #Setup frames
-        
+        self.labelframe = tk.LabelFrame(self, text = "Rules", font = ("", 9, "bold"))
+        self.list_frame = tk.Frame(self)
+
+        #Setup entries
+        self.var_combobox = ttk.Combobox(self.labelframe, state = "readonly")
+
         #Setup buttons
 
         #Setup event bindings
 
         #Placement
+        self.labelframe.pack(padx = 5, pady = 5, ipadx = 5, ipady = 5)
+
+        self.var_combobox.pack()
+
+    def set_instances(self, variable_treeview_frame):
+        self.var_treeview_obj = variable_treeview_frame
+
+    def update_combobox_values(self):
+        '''
+        Updates the values of the variable combobox to match the var names in the
+        variable list.
+        '''
+        vars = set(self.var_treeview_obj.get_tree_rows_data(0))
+        cbox_text = self.var_combobox.get()
+
+        if cbox_text != "" and cbox_text not in vars:
+            self.var_combobox.set("")
+        if len(vars) == 0:
+            self.var_combobox["values"] = ""
+            self.var_combobox.set("")
+        else:
+            self.var_combobox["values"] = list(vars)
+    
+        
+
 
 
 app = tk.Tk()
 
-#declare widgets test
+#declare widgets
 varlist = VariableTreeViewFrame(app)
-variables = VariablesFrame(app, varlist)
+varinput = VariablesFrame(app)
+rules = RulesFrame(app)
+
+#Set instance binding
+varlist.set_instances(rules)
+varinput.set_instances(varlist, rules)
+rules.set_instances(varlist)
 
 #pack test
-variables.pack()
+varinput.pack()
 varlist.pack()
+rules.pack()
 
 app.mainloop()
