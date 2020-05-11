@@ -30,7 +30,8 @@ class VariablesFrame(tk.Frame):
         #Setup submit button
         self.submit_button = tk.Button(self.submit_frame, 
                                         text = "submit", 
-                                        width = 21, state = tk.DISABLED,
+                                        width = 21, 
+                                        state = tk.DISABLED,
                                         command = self.submit_button_clicked_event)
 
         #Event bindings
@@ -229,20 +230,63 @@ class RulesFrame(tk.Frame):
         super().__init__(master = master, **kw)
 
         #Setup frames
-        self.labelframe = tk.LabelFrame(self, text = "Rules", font = ("", 9, "bold"))
-        self.list_frame = tk.Frame(self)
+        self.label_frame = tk.LabelFrame(self, text = "Rules", font = ("", 9, "bold"))
+        self.entries_frame = tk.Frame(self.label_frame)
+        self.treeview_frame = tk.Frame(self)
+
+        #Setup rules treeview
+        self.treeview = ttk.Treeview(self.treeview_frame, 
+                                            columns = ["var", "mutation"],
+                                            show = "headings",
+                                            selectmode = "browse",
+                                            height = 3)
+        self.treeview.column("var", minwidth = 20, width = 40, stretch = tk.NO)
+        self.treeview.heading("var", text = "var")
+        self.treeview.heading("mutation", text = "mutation")
+
+        #Setup treeview vertical scrollbar
+        self.treeview_scrollbar = tk.Scrollbar(self.treeview_frame, 
+                                                    orient = tk.VERTICAL,
+                                                    command = self.treeview.yview)
+        self.treeview.configure(yscrollcommand = self.treeview_scrollbar.set)
 
         #Setup entries
-        self.var_combobox = ttk.Combobox(self.labelframe, state = "readonly")
+        self.var_combobox = ttk.Combobox(self.entries_frame, 
+                                        state = "readonly", 
+                                        width = 3)
+        self.mutation_entry = tk.Entry(self.entries_frame)
+
+        #Setup labels
+        self.equals_label = tk.Label(self.entries_frame, text = "=")
 
         #Setup buttons
+        self.submit_button = tk.Button(self.label_frame, 
+                                        text = "submit", 
+                                        width = 21,
+                                        state = tk.DISABLED,
+                                        command = self.submit_button_clicked_event)
 
         #Setup event bindings
+        self.var_combobox.bind("<<ComboboxSelected>>", self.var_combobox_item_selected_event)
+        self.mutation_entry.bind("<KeyRelease>", self.mutation_entry_key_released_event)
+
+        #Adjust grid weights
+        self.treeview_frame.columnconfigure(0, weight = 1)
+        self.treeview_frame.columnconfigure(1, weight = 0)
 
         #Placement
-        self.labelframe.pack(padx = 5, pady = 5, ipadx = 5, ipady = 5)
+        self.label_frame.pack(padx = 5, pady = 5)
+        self.entries_frame.pack(padx = 5, pady = 5)
+        self.treeview_frame.pack(padx = 5, pady = 5)
 
-        self.var_combobox.pack()
+        self.treeview.grid(column = 0, row = 0)
+        self.treeview_scrollbar.grid(column = 1, row = 0, sticky = tk.N + tk.S)
+
+        self.var_combobox.grid(column = 0, row = 0)
+        self.equals_label.grid(column = 1, row = 0)
+        self.mutation_entry.grid(column = 2, row = 0)
+
+        self.submit_button.pack(pady = (0, 5))
 
     def set_instances(self, variable_treeview_frame):
         self.var_treeview_obj = variable_treeview_frame
@@ -262,11 +306,38 @@ class RulesFrame(tk.Frame):
             self.var_combobox.set("")
         else:
             self.var_combobox["values"] = list(vars)
+
+        self.update_submit_button_status()
+    
+    def update_submit_button_status(self):
+        '''
+        Checks if nessesary entries have been filled to submit rule to treeview list.
+        If, then submit button's state is set to normal.
+        '''
+        var = self.var_combobox.get()
+        mutation = self.mutation_entry.get()
+
+        if var != "" and len(mutation) > 0:
+            self.submit_button["state"] = tk.NORMAL
+        else:
+            self.submit_button["state"] = tk.DISABLED
+
+    def insert_rule(self, var, mutation):
+        self.treeview.insert("", tk.END, values = [var, mutation])
+
+    def submit_button_clicked_event(self):
+        var = self.var_combobox.get()
+        mutation = self.mutation_entry.get()
+        self.insert_rule(var, mutation)
+
+    def mutation_entry_key_released_event(self, args):
+        self.update_submit_button_status()
+
+    def var_combobox_item_selected_event(self, args):
+        self.update_submit_button_status()
+
     
         
-
-
-
 app = tk.Tk()
 
 #declare widgets
