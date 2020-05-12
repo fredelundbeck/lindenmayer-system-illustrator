@@ -149,8 +149,11 @@ class VariableTreeViewFrame(tk.Frame):
                                         show = "headings",
                                         selectmode = "browse",
                                         height = 5)
+        self.treeview.column("var", minwidth = 20, width = 60)
         self.treeview.heading("var", text = "var")
+        self.treeview.column("function", minwidth = 40, width = 80)
         self.treeview.heading("function", text = "f(x)")
+        self.treeview.column("value", minwidth = 40, width = 70)
         self.treeview.heading("value", text = "value")
 
         #Setup treeview vertical scrollbar
@@ -346,12 +349,29 @@ class DrawFrame(tk.Frame):
         super().__init__(master=master, **kw)
 
         #Setup canvas
-        self.canvas = tk.Canvas(self)
+        self.canvas = tk.Canvas(self, 
+                                bg="#FFFFFF", 
+                                borderwidth = 5, 
+                                highlightthickness = 5,
+                                relief = tk.SUNKEN)
 
         #Placement
         self.canvas.pack(fill = tk.BOTH, expand = True)
 
+        #Draw edge coordinates to canvas 
+        self.draw_edge_coordinates()
+
     def draw_lsystem(self, lsystem, variables, start_rot = 0, start_pos = (0, 0)):
+        '''
+        Takes in an lsystem and various other arguments to 
+        draw the system to the canvas. 
+
+        The algorithm supports four operations: move, rotate, save, load.
+        Move draws a line with given length in a direction calculated by the rotation.
+        Rotate changes the current rotation by the given value.
+        Save pushes the current position and rotation (state) to a stack.
+        Load pops the latest state from the stack and sets position and rotation to it.
+        '''
 
         self.clear_canvas()
 
@@ -360,7 +380,6 @@ class DrawFrame(tk.Frame):
         states = []
         
         for char in lsystem:
-            
             operation = variables.get(char)
             
             if operation == None:
@@ -379,22 +398,33 @@ class DrawFrame(tk.Frame):
                                         new_position[1])
                 position = new_position
 
-            if func == "rotate":
+            elif func == "rotate":
                 rotation += value
             
-            if func == "save":
+            elif func == "save":
                 states.insert(len(states), (position, rotation))
 
-            if func == "load":
+            elif func == "load":
                 saved_state = states.pop()
                 position = saved_state[0]
                 rotation = saved_state[1]
         
+    def draw_edge_coordinates(self):
+        self.canvas.create_text(30, 20, text = "(-1, -1)", font = ("", 9, "bold"))
+        self.canvas.create_text(685, 20, text = "(1, -1)", font = ("", 9, "bold"))
+        self.canvas.create_text(30, 680, text = "(-1, 1)", font = ("", 9, "bold"))
+        self.canvas.create_text(685, 680, text = "(1, 1)", font = ("", 9, "bold"))
 
     def clear_canvas(self):
+        '''
+        Clears the canvas for graphics
+        '''
         self.canvas.delete(tk.ALL)
 
     def change_canvas_background(self, color):
+        '''
+        Change the background color of the canvas
+        '''
         self.canvas["bg"] = color
         
 
@@ -402,21 +432,28 @@ class DrawFrame(tk.Frame):
         
 app = tk.Tk()
 
+app.geometry("950x700")
+app.resizable(0,0)
 
-#Declare widgets
-varlist = VariableTreeViewFrame(app)
-varinput = VariablesFrame(app)
-rules = RulesFrame(app)
+#Declare and initialize widgets
+leftframe = tk.Frame(app)
+drawframe = DrawFrame(app)
+
+varlist = VariableTreeViewFrame(leftframe)
+varinput = VariablesFrame(leftframe)
+rules = RulesFrame(leftframe)
 
 #Set instance binding
 varlist.set_instances(rules)
 varinput.set_instances(varlist, rules)
 rules.set_instances(varlist)
 
-#Pack test
-varinput.pack()
-varlist.pack()
-rules.pack()
+#Placement
+leftframe.place(relx = 0, rely = 0, relwidth = 0.25, relheight = 1)
+drawframe.place(relx = 0.25, rely = 0, relwidth = 0.75, relheight =1)
 
+varinput.pack(anchor = tk.W)
+varlist.pack(anchor = tk.W)
+rules.pack(anchor = tk.W)
 
 app.mainloop()
