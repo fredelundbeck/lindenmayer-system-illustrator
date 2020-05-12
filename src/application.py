@@ -2,6 +2,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import re as regex
 import utilities as util
+import lsystem as lsys
 
 class VariablesFrame(tk.Frame):
     '''
@@ -338,6 +339,32 @@ class RulesFrame(tk.Frame):
 
     def var_combobox_item_selected_event(self, args):
         self.update_submit_button_status()
+
+class DrawFrame(tk.Frame):
+    def __init__(self, master=None, **kw):
+        super().__init__(master=master, **kw)
+
+        #Setup canvas
+        self.canvas = tk.Canvas(self)
+
+        #Placement
+        self.canvas.pack()
+
+    def draw_lsystem(self, axiom, variables, rules, iteration, start_rot = 0, start_pos = (0, 0)):
+
+        self.clear_canvas()
+
+        states = []
+        system = lsys.LSystem(axiom, rules)
+        for _ in iteration:
+            next(system)
+
+    def clear_canvas(self):
+        self.canvas.delete(tk.ALL)
+
+    def change_canvas_background(self, color):
+        self.canvas["bg"] = color
+        
 
     
         
