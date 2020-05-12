@@ -3,6 +3,7 @@ import tkinter.ttk as ttk
 import re as regex
 import utilities as util
 import lsystem as lsys
+import math
 
 class VariablesFrame(tk.Frame):
     '''
@@ -348,16 +349,47 @@ class DrawFrame(tk.Frame):
         self.canvas = tk.Canvas(self)
 
         #Placement
-        self.canvas.pack()
+        self.canvas.pack(fill = tk.BOTH, expand = True)
 
-    def draw_lsystem(self, axiom, variables, rules, iteration, start_rot = 0, start_pos = (0, 0)):
+    def draw_lsystem(self, lsystem, variables, start_rot = 0, start_pos = (0, 0)):
 
         self.clear_canvas()
 
+        position = start_pos
+        rotation = start_rot
         states = []
-        system = lsys.LSystem(axiom, rules)
-        for _ in iteration:
-            next(system)
+        
+        for char in lsystem:
+            
+            operation = variables.get(char)
+            
+            if operation == None:
+                continue
+
+            func = operation[0]
+            value = operation[1]
+
+            if func == "move":
+                new_position = (position[0] + math.cos((rotation * math.pi / 180)) * value, 
+                                position[1] + math.sin((rotation * math.pi / 180)) * value)
+    
+                self.canvas.create_line(position[0],
+                                        position[1], 
+                                        new_position[0], 
+                                        new_position[1])
+                position = new_position
+
+            if func == "rotate":
+                rotation += value
+            
+            if func == "save":
+                states.insert(len(states), (position, rotation))
+
+            if func == "load":
+                saved_state = states.pop()
+                position = saved_state[0]
+                rotation = saved_state[1]
+        
 
     def clear_canvas(self):
         self.canvas.delete(tk.ALL)
@@ -369,6 +401,7 @@ class DrawFrame(tk.Frame):
     
         
 app = tk.Tk()
+
 
 #Declare widgets
 varlist = VariableTreeViewFrame(app)
@@ -384,5 +417,6 @@ rules.set_instances(varlist)
 varinput.pack()
 varlist.pack()
 rules.pack()
+
 
 app.mainloop()
