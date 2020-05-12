@@ -1,5 +1,7 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+import lsystem as lsys
+
 
 class VariableInputs(tk.Frame):
     def __init__(self, master = None, treeview = None, **kw):
@@ -162,6 +164,35 @@ class StartRules(tk.Frame):
         self.equal_label.grid(column = 2, row = 0)
         self.mutation_entry.grid(column = 3, row = 0)
         self.add_button.pack()
+
+class DrawFrame(tk.Frame):
+    def __init__(self, master=None, **kw):
+        super().__init__(master=master, **kw)
+
+        #Setup canvas
+        self.canvas = tk.Canvas(self)
+
+        #Placement
+        self.canvas.pack()
+
+    def draw_lsystem(self, axiom, variables, rules, iteration, start_rot = 0, start_pos = (0, 0)):
+
+        self.clear_canvas()
+
+        states = []
+        system = lsys.LSystem(axiom, rules)
+        for _ in iteration:
+            next(system)
+
+    def clear_canvas(self):
+        self.canvas.delete(tk.ALL)
+
+    def change_canvas_background(self, color):
+        self.canvas["bg"] = color
+        
+
+
+        
 
 app = tk.Tk()
 variables = VariableInputs(app)

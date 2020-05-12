@@ -323,6 +323,9 @@ class RulesFrame(tk.Frame):
             self.submit_button["state"] = tk.DISABLED
 
     def insert_rule(self, var, mutation):
+        '''
+        Inserts given rule into the rule treeview.
+        '''
         self.treeview.insert("", tk.END, values = [var, mutation])
 
     def submit_button_clicked_event(self):
@@ -340,7 +343,7 @@ class RulesFrame(tk.Frame):
         
 app = tk.Tk()
 
-#declare widgets
+#Declare widgets
 varlist = VariableTreeViewFrame(app)
 varinput = VariablesFrame(app)
 rules = RulesFrame(app)
@@ -350,7 +353,7 @@ varlist.set_instances(rules)
 varinput.set_instances(varlist, rules)
 rules.set_instances(varlist)
 
-#pack test
+#Pack test
 varinput.pack()
 varlist.pack()
 rules.pack()
