@@ -359,7 +359,7 @@ class DrawFrame(tk.Frame):
         self.canvas.pack(fill = tk.BOTH, expand = True)
 
         #Draw edge coordinates to canvas 
-        self.draw_edge_coordinates()
+        self.draw_corner_coordinates()
 
     def draw_lsystem(self, lsystem, variables, start_rot = 0, start_pos = (0, 0)):
         '''
@@ -409,11 +409,22 @@ class DrawFrame(tk.Frame):
                 position = saved_state[0]
                 rotation = saved_state[1]
         
-    def draw_edge_coordinates(self):
+    def draw_corner_coordinates(self):
+        print(self.world_pos_to_normalized(600, 600))
         self.canvas.create_text(30, 20, text = "(-1, -1)", font = ("", 9, "bold"))
         self.canvas.create_text(685, 20, text = "(1, -1)", font = ("", 9, "bold"))
         self.canvas.create_text(30, 680, text = "(-1, 1)", font = ("", 9, "bold"))
         self.canvas.create_text(685, 680, text = "(1, 1)", font = ("", 9, "bold"))
+
+    def world_pos_to_normalized(self, x, y):
+        nx = 2 * (x / self.canvas.winfo_width()) - 1 
+        ny = 2 * (y / self.canvas.winfo_height()) - 1 
+        return (nx, ny) 
+
+    def normalized_to_world_pos(self, x, y):
+        wx = self.canvas.winfo_width() * ((x + 1) / 2) 
+        wy = self.canvas.winfo_height() * ((y + 1) / 2) 
+        return (wx, wy)
 
     def clear_canvas(self):
         '''
@@ -455,5 +466,7 @@ drawframe.place(relx = 0.25, rely = 0, relwidth = 0.75, relheight =1)
 varinput.pack(anchor = tk.W)
 varlist.pack(anchor = tk.W)
 rules.pack(anchor = tk.W)
+
+app.update()
 
 app.mainloop()
