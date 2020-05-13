@@ -45,7 +45,7 @@ class VariablesFrame(tk.Frame):
         self.val_entry.bind("<KeyRelease>", self.update_submit_button_state, add = "+")
 
         #Placement
-        self.label_frame.pack(padx = 5, pady = 5)
+        self.label_frame.pack(padx = 5, pady = 5, fill = tk.X)
         self.entry_frame.pack(padx = 5, pady = 5)
         self.submit_frame.pack()
 
@@ -149,9 +149,9 @@ class VariableTreeViewFrame(tk.Frame):
                                         show = "headings",
                                         selectmode = "browse",
                                         height = 5)
-        self.treeview.column("var", minwidth = 20, width = 60)
+        self.treeview.column("var", minwidth = 20, width = 40)
         self.treeview.heading("var", text = "var")
-        self.treeview.column("function", minwidth = 40, width = 80)
+        self.treeview.column("function", minwidth = 40, width = 100)
         self.treeview.heading("function", text = "f(x)")
         self.treeview.column("value", minwidth = 40, width = 70)
         self.treeview.heading("value", text = "value")
@@ -245,8 +245,9 @@ class RulesFrame(tk.Frame):
                                             show = "headings",
                                             selectmode = "browse",
                                             height = 3)
-        self.treeview.column("var", minwidth = 20, width = 40, stretch = tk.NO)
+        self.treeview.column("var", minwidth = 20, width = 40)
         self.treeview.heading("var", text = "var")
+        self.treeview.column("mutation", minwidth = 20, width = 169)
         self.treeview.heading("mutation", text = "mutation")
 
         #Setup treeview vertical scrollbar
@@ -280,7 +281,7 @@ class RulesFrame(tk.Frame):
         self.treeview_frame.columnconfigure(1, weight = 0)
 
         #Placement
-        self.label_frame.pack(padx = 5, pady = 5)
+        self.label_frame.pack(padx = 5, pady = 5, fill = tk.X)
         self.entries_frame.pack(padx = 5, pady = 5)
         self.treeview_frame.pack(padx = 5, pady = 5)
 
@@ -350,7 +351,7 @@ class DrawFrame(tk.Frame):
 
         #Setup canvas
         self.canvas = tk.Canvas(self, 
-                                bg="#FFFFFF", 
+                                bg="#333333", 
                                 borderwidth = 5, 
                                 highlightthickness = 5,
                                 relief = tk.SUNKEN)
@@ -410,18 +411,45 @@ class DrawFrame(tk.Frame):
                 rotation = saved_state[1]
         
     def draw_corner_coordinates(self):
-        print(self.world_pos_to_normalized(600, 600))
-        self.canvas.create_text(30, 20, text = "(-1, -1)", font = ("", 9, "bold"))
-        self.canvas.create_text(685, 20, text = "(1, -1)", font = ("", 9, "bold"))
-        self.canvas.create_text(30, 680, text = "(-1, 1)", font = ("", 9, "bold"))
-        self.canvas.create_text(685, 680, text = "(1, 1)", font = ("", 9, "bold"))
+        '''
+
+        '''
+        #Draw coordinates text graphics
+        self.draw_text_with_shadow("(-1, -1)", (32, 20))
+        self.draw_text_with_shadow("(1, -1)", (683, 20))
+        self.draw_text_with_shadow("(-1, 1)", (30, 680))
+        self.draw_text_with_shadow("(1, 1)", (685, 680))
+
+        #Draw rotation arrows graphics
+        self.canvas.create_line(353, 398, 353, 298, fill = "black", arrow = tk.LAST, width = 2)
+        self.canvas.create_line(303, 348, 403, 348, fill = "black", arrow = tk.LAST, width = 2)
+
+        self.canvas.create_line(350, 395, 350, 295, fill = "white", arrow = tk.LAST, width = 2)
+        self.canvas.create_line(300, 345, 400, 345, fill = "white", arrow = tk.LAST, width = 2)
+
+        #Draw rotation texts graphics
+        self.draw_text_with_shadow("0°", (413, 345))
+        self.draw_text_with_shadow("90°", (352, 285))
+
+
+    def draw_text_with_shadow(self, text, pos):
+        self.canvas.create_text(pos[0] + 2, pos[1] + 2, text = text, font = ("", 10, "bold"), fill = "black")
+        self.canvas.create_text(pos[0], pos[1], text = text, font = ("", 10, "bold"), fill = "white")
 
     def world_pos_to_normalized(self, x, y):
+        '''
+        Converts a given world position to a 
+        normalized position between [-1 : 1]
+        '''
         nx = 2 * (x / self.canvas.winfo_width()) - 1 
         ny = 2 * (y / self.canvas.winfo_height()) - 1 
         return (nx, ny) 
 
     def normalized_to_world_pos(self, x, y):
+        '''
+        Converts a given normalized position to a 
+        world position between [0 : canvas width/height]
+        '''
         wx = self.canvas.winfo_width() * ((x + 1) / 2) 
         wy = self.canvas.winfo_height() * ((y + 1) / 2) 
         return (wx, wy)
@@ -431,6 +459,7 @@ class DrawFrame(tk.Frame):
         Clears the canvas for graphics
         '''
         self.canvas.delete(tk.ALL)
+        self.draw_corner_coordinates()
 
     def change_canvas_background(self, color):
         '''
@@ -438,11 +467,45 @@ class DrawFrame(tk.Frame):
         '''
         self.canvas["bg"] = color
         
+class SettingsFrame(tk.Frame):
+    def __init__(self, master=None, **kw):
+        super().__init__(master=master, **kw)
 
-    
+        #Setup frames
+        self.labelframe = tk.LabelFrame(self, text = "Settings", font = ("", 9, "bold"))
+        self.settingsframe = tk.Frame(self.labelframe)
+
+        #Setup labels
+        self.axiom_label = tk.Label(self.settingsframe, text = "axiom:")
+        self.position_x_label = tk.Label(self.settingsframe, text = "position x:")
+        self.position_y_label = tk.Label(self.settingsframe, text = "position y:")
+        self.rotation_label = tk.Label(self.settingsframe, text = "rotation:")
+
+        #Setup entries
+        self.axiom_entry = tk.Entry(self.settingsframe, width = 15)
+        self.position_x_entry = tk.Entry(self.settingsframe, width = 15)
+        self.position_y_entry = tk.Entry(self.settingsframe, width = 15)
+        self.rotation_entry = tk.Entry(self.settingsframe, width = 15)
+
+        #Setup event bindings
+
+        #Placement
+        self.labelframe.pack(padx = 5, pady = 5, fill = tk.X)
+        self.settingsframe.pack(padx = 5, pady = 5)
+
+        self.axiom_label.grid(column = 0, row = 0, sticky = tk.W, pady = 2)
+        self.position_x_label.grid(column = 0, row = 1, sticky = tk.W, pady = 2)
+        self.position_y_label.grid(column = 0, row = 2, sticky = tk.W, pady = 2)
+        self.rotation_label.grid(column = 0, row = 3, sticky = tk.W, pady = 2)
+
+        self.axiom_entry.grid(column = 1, row = 0)
+        self.position_x_entry.grid(column = 1, row = 1)
+        self.position_y_entry.grid(column = 1, row = 2)
+        self.rotation_entry.grid(column = 1, row = 3)
         
 app = tk.Tk()
 
+app.title("Lindenmayer Systems Illustrator")
 app.geometry("950x700")
 app.resizable(0,0)
 
@@ -453,6 +516,7 @@ drawframe = DrawFrame(app)
 varlist = VariableTreeViewFrame(leftframe)
 varinput = VariablesFrame(leftframe)
 rules = RulesFrame(leftframe)
+settings = SettingsFrame(leftframe)
 
 #Set instance binding
 varlist.set_instances(rules)
@@ -463,9 +527,10 @@ rules.set_instances(varlist)
 leftframe.place(relx = 0, rely = 0, relwidth = 0.25, relheight = 1)
 drawframe.place(relx = 0.25, rely = 0, relwidth = 0.75, relheight =1)
 
-varinput.pack(anchor = tk.W)
-varlist.pack(anchor = tk.W)
-rules.pack(anchor = tk.W)
+varinput.pack(anchor = tk.W, fill = tk.X)
+varlist.pack(anchor = tk.W, fill = tk.X)
+rules.pack(anchor = tk.W, fill = tk.X)
+settings.pack(anchor = tk.W, fill = tk.X)
 
 app.update()
 
