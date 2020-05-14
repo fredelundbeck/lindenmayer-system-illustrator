@@ -1,6 +1,6 @@
 def isdigit(str):
     try:
-        int(str)
+        float(str)
         return True
     except ValueError:
         return False

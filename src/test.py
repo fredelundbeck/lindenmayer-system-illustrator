@@ -31,8 +31,8 @@ class VariablesFrame(tk.Frame):
             state = "readonly")
 
         #Setup buttons
-        self.add_button = tk.Button(self.buttons_frame, text = "Add")
-        self.delete_button = tk.Button(self.buttons_frame, text = "Delete")
+        self.add_button = tk.Button(self.buttons_frame, text = "Add", state = tk.DISABLED)
+        self.delete_button = tk.Button(self.buttons_frame, text = "Delete", state = tk.DISABLED)
 
         #Setup treeview
         self.treeview = widgets.ScrollableTreeviewFrame(self.label_frame)
@@ -74,8 +74,7 @@ class RulesFrame(tk.Frame):
         self.label_frame = tk.LabelFrame(
             self, 
             text = "Rules", 
-            font = ("", 12),
-            padx = 0, 
+            font = ("", 12), 
             pady = 5)
         
         self.input_frame = tk.Frame(self.label_frame)
@@ -83,8 +82,8 @@ class RulesFrame(tk.Frame):
         self.buttons_frame = tk.Frame(self.input_frame)
 
         #Setup buttons
-        self.add_button = tk.Button(self.buttons_frame, text = "Add")
-        self.delete_button = tk.Button(self.buttons_frame, text = "Delete")
+        self.add_button = tk.Button(self.buttons_frame, text = "Add", state = tk.DISABLED)
+        self.delete_button = tk.Button(self.buttons_frame, text = "Delete", state = tk.DISABLED)
 
         #Setup entries
         self.var_combobox = ttk.Combobox(self.entries_frame, width = 2)
@@ -123,11 +122,93 @@ class RulesFrame(tk.Frame):
 class SettingsFrame(tk.Frame):
     def __init__(self, master=None, **kw):
         super().__init__(master=master, **kw)
-    
+
+        #Setup frames
+        self.label_frame = tk.LabelFrame(
+            self, text = "Settings", 
+            font = ("", 12),
+            pady = 5)
+        
+        self.input_frame = tk.Frame(self.label_frame)
+
+        #Setup labels
+        self.axiom_label = tk.Label(self.input_frame, text = "Axiom:")
+        self.position_x_label = tk.Label(self.input_frame, text = "Position X:")
+        self.position_y_label = tk.Label(self.input_frame, text = "Position Y:")
+        self.angle_label = tk.Label(self.input_frame, text = "Angle (deg):")
+
+        self.iteration_label = tk.Label(self.input_frame, text = "Iterations:")
+        self.line_start_thickness_label = tk.Label(self.input_frame, text = "Line start thickness:")
+        self.line_end_thickness_label = tk.Label(self.input_frame, text = "Line end thickness:")
+        self.line_type_label = tk.Label(self.input_frame, text = "Line type:")
+
+        #Setup entries
+        self.axiom_entry = widgets.Entry(self.input_frame, width = 8)
+        self.position_x_entry = widgets.NumberEntry(self.input_frame, width = 8)
+        self.position_y_entry = widgets.NumberEntry(self.input_frame, width = 8)
+        self.angle_entry = widgets.NumberEntry(self.input_frame, width = 8)
+
+        self.iteration_spinbox = tk.Spinbox(
+            self.input_frame, 
+            width = 8, 
+            from_ = 1, 
+            to = 10,
+            state = "readonly")
+
+        self.line_start_thickness_spinbox = tk.Spinbox(
+            self.input_frame, 
+            width = 8,
+            from_ = 1,
+            to = 100,
+            state = "readonly")
+
+        self.line_end_thickness_spinbox = tk.Spinbox(
+            self.input_frame, 
+            width = 8,
+            from_ = 1,
+            to = 100,
+            state = "readonly")
+
+        self.line_type_combobox = ttk.Combobox(
+            self.input_frame, 
+            width = 7, 
+            state = "readonly",
+            values = ["Straight", "Curvy", "Arrow"])
+
+
+        #Placement
+        self.label_frame.pack(fill = tk.BOTH)
+        self.input_frame.pack(fill = tk.BOTH, padx = 5, pady = 5)
+
+        self.axiom_label.grid(column = 0, row = 0, sticky = tk.W, pady = (0,5))
+        self.position_x_label.grid(column = 0, row = 1, sticky = tk.W, pady = (0,5))
+        self.position_y_label.grid(column = 0, row = 2, sticky = tk.W, pady = (0,5))
+        self.angle_label.grid(column = 0, row = 3, sticky = tk.W, pady = (0,5))
+
+        self.axiom_entry.grid(column = 1, row = 0, pady = (0,5))
+        self.position_x_entry.grid(column = 1, row = 1, pady = (0,5))
+        self.position_y_entry.grid(column = 1, row = 2, pady = (0,5))
+        self.angle_entry.grid(column = 1, row = 3, pady = (0,5))
+
+        self.iteration_label.grid(column = 2, row = 0, sticky = tk.W, padx = (10, 0), pady = (0,5))
+        self.line_start_thickness_label.grid(column = 2, row = 1, sticky = tk.W, padx = (10, 0), pady = (0,5))
+        self.line_end_thickness_label.grid(column = 2, row = 2, sticky = tk.W, padx = (10, 0), pady = (0,5))
+        self.line_type_label.grid(column = 2, row = 3, sticky = tk.W, padx = (10, 0), pady = (0,5))
+
+        self.iteration_spinbox.grid(column = 3, row = 0, pady = (0,5))
+        self.line_start_thickness_spinbox.grid(column = 3, row = 1, pady = (0,5))
+        self.line_end_thickness_spinbox.grid(column = 3, row = 2, pady = (0,5))
+        self.line_type_combobox.grid(column = 3, row = 3, pady = (0,5))
+
+
+
+        
 
 
 app = tk.Tk()
-app.geometry("1250x750")
+app.title("Lindenmayer Systems Illustrator")
+app.geometry("1150x750")
+app.resizable(0,0)
 
 #Setup main frames
 control_frame = tk.Frame(app, padx = 5, pady = 5)
