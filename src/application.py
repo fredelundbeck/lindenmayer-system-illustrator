@@ -362,7 +362,7 @@ class DrawFrame(tk.Frame):
         #Draw edge coordinates to canvas 
         self.draw_corner_coordinates()
 
-    def draw_lsystem(self, lsystem, variables, start_rot = 0, start_pos = (0, 0)):
+    async def draw_lsystem(self, lsystem, variables, start_rot = 0, start_pos = (0, 0)):
         '''
         Takes in an lsystem and various other arguments to 
         draw the system to the canvas. 
@@ -502,7 +502,26 @@ class SettingsFrame(tk.Frame):
         self.position_x_entry.grid(column = 1, row = 1)
         self.position_y_entry.grid(column = 1, row = 2)
         self.rotation_entry.grid(column = 1, row = 3)
+
+class LauncherFrame(tk.Frame):
+    def __init__(self, master=None, **kw):
+        super().__init__(master=master, **kw)
+
+        #Setup frame
+        self.frame = tk.Frame(self)
+
+        #Setup button
+        self.button = tk.Button(self.frame, 
+                                text = "draw system",
+                                background = "#D4D4D4")
+
+        #Placement
+        self.frame.pack(fill = tk.BOTH, padx = 5, pady = 5)
+        self.button.pack(fill = tk.X)
         
+    def draw_button_clicked_event(self, args):
+        pass
+
 app = tk.Tk()
 
 app.title("Lindenmayer Systems Illustrator")
@@ -517,6 +536,7 @@ varlist = VariableTreeViewFrame(leftframe)
 varinput = VariablesFrame(leftframe)
 rules = RulesFrame(leftframe)
 settings = SettingsFrame(leftframe)
+launcher = LauncherFrame(leftframe)
 
 #Set instance binding
 varlist.set_instances(rules)
@@ -531,6 +551,7 @@ varinput.pack(anchor = tk.W, fill = tk.X)
 varlist.pack(anchor = tk.W, fill = tk.X)
 rules.pack(anchor = tk.W, fill = tk.X)
 settings.pack(anchor = tk.W, fill = tk.X)
+launcher.pack(anchor = tk.W, fill = tk.X)
 
 app.update()
 
