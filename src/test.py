@@ -9,7 +9,7 @@ class VariablesFrame(tk.Frame):
         #Setup frames
         self.label_frame = tk.LabelFrame(
             self,
-            text = "Variables",
+            text = "Symbols",
             font = ("", 12),
             padx = 0,
             pady = 5)
@@ -19,7 +19,7 @@ class VariablesFrame(tk.Frame):
 
         #Setup label
         self.variable_label = tk.Label(self.input_frame, text = "Var:")
-        self.value_label = tk.Label(self.input_frame, text = "Value:")
+        self.value_label = tk.Label(self.input_frame, text = "Default:")
         self.operation_label = tk.Label(self.input_frame, text = "f(x):")
 
         #Setup entries
@@ -27,27 +27,33 @@ class VariablesFrame(tk.Frame):
         self.value_entry = widgets.NumberEntry(self.input_frame, width = 6)
         self.operation_combobox = ttk.Combobox(
             self.input_frame,
-            values = ["Move", "Rotate", "Save", "Load"],
+            values = ["Move pen down", "Move pen up", "Turn right", "Turn left", "Multiply step", 
+                "Color up", "Color down", "Color set", "Switch turn directions", 
+                "Thickness up", "Thickness down", "Thickness set", "Save state", "Load state"],
             state = "readonly")
 
         #Setup buttons
         self.add_button = tk.Button(self.buttons_frame, text = "Add", state = tk.DISABLED)
         self.delete_button = tk.Button(self.buttons_frame, text = "Delete", state = tk.DISABLED)
+        self.load_defaults_button = tk.Button(self.buttons_frame, text = "Load defaults")
 
         #Setup treeview
         self.treeview = widgets.ScrollableTreeviewFrame(self.label_frame)
         self.treeview.configure_treeview(
-            columns = ["var", "op", "val"],
+            columns = ["sym", "op", "def"],
             show = "headings",
             selectmode = "browse",
-            height = 4)
+            height = 6)
         
-        self.treeview.modify_heading("var", text = "Variable")
+        self.treeview.modify_heading("sym", text = "Symbol")
         self.treeview.modify_heading("op", text = "Operation")
-        self.treeview.modify_heading("val", text = "Value")
-        self.treeview.modify_column("var", minwidth = 30, width = 0)
-        self.treeview.modify_column("op", minwidth = 30, width = 0)
-        self.treeview.modify_column("val", minwidth = 30, width = 0)
+        self.treeview.modify_heading("def", text = "Default")
+        self.treeview.modify_column("sym", minwidth = 30, width = 10)
+        self.treeview.modify_column("op", minwidth = 30, width = 100)
+        self.treeview.modify_column("def", minwidth = 30, width = 30)
+
+        #Setup binding events
+        self.load_defaults_button.bind("<Button-1>", self.load_defaults_button_clicked_event)
 
         #Placement
         self.label_frame.pack(fill = tk.BOTH)
@@ -65,6 +71,26 @@ class VariablesFrame(tk.Frame):
         self.buttons_frame.pack(side = tk.RIGHT, anchor = tk.N, padx = 5, pady = 5)
         self.add_button.grid(column = 0, row = 0, padx = (0, 3))
         self.delete_button.grid(column = 1, row = 0)
+        self.load_defaults_button.grid(column = 0, row = 1, columnspan = 2, pady = (4, 0))
+
+    def load_defaults_button_clicked_event(self, args):
+
+        self.treeview.clear_rows()
+
+        self.treeview.insert_row(("F", "Move pen down"))
+        self.treeview.insert_row(("G", "Move pen up"))
+        self.treeview.insert_row(("+", "Turn right"))
+        self.treeview.insert_row(("-", "Turn left"))
+        self.treeview.insert_row(("!", "Switch turn directions"))
+        self.treeview.insert_row(("@", "Multiply step", 1.5))
+        self.treeview.insert_row(("[", "Save state"))
+        self.treeview.insert_row(("]", "Load state"))
+        self.treeview.insert_row(("<", "Color up", 1))
+        self.treeview.insert_row((">", "Color down", 1))
+        self.treeview.insert_row(("%", "Color set", 0))
+        self.treeview.insert_row(("(", "Thickness up", 1))
+        self.treeview.insert_row((")", "Thickness down", 1))
+        self.treeview.insert_row(("&", "Thickness set", 0))
 
 class RulesFrame(tk.Frame):
     def __init__(self, master=None, **kw):
@@ -86,7 +112,7 @@ class RulesFrame(tk.Frame):
         self.delete_button = tk.Button(self.buttons_frame, text = "Delete", state = tk.DISABLED)
 
         #Setup entries
-        self.var_combobox = ttk.Combobox(self.entries_frame, width = 2)
+        self.variable_entry = widgets.Entry(self.entries_frame, width = 2)
         self.mutation_entry = widgets.Entry(self.entries_frame)
 
         #Setup labels
@@ -112,7 +138,7 @@ class RulesFrame(tk.Frame):
 
         self.entries_frame.pack(side = tk.LEFT)
         self.var_label.grid(column = 0, row = 0)
-        self.var_combobox.grid(column = 1, row = 0, padx = (0, 5))
+        self.variable_entry.grid(column = 1, row = 0, padx = (0, 5))
         self.mutation_entry.grid(column = 2, row = 0)
 
         self.buttons_frame.pack(side = tk.RIGHT)
@@ -200,9 +226,6 @@ class SettingsFrame(tk.Frame):
         self.line_end_thickness_spinbox.grid(column = 3, row = 2, pady = (0,5))
         self.line_type_combobox.grid(column = 3, row = 3, pady = (0,5))
 
-
-
-        
 
 
 app = tk.Tk()

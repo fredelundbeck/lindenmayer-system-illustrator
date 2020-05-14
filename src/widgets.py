@@ -35,8 +35,15 @@ class ScrollableTreeviewFrame(tk.Frame):
     def modify_column(self, column, **kw):
         self.treeview.column(column, **kw)
 
-    def remove_row(self, item):
-        self.treeview.delete(item)
+    def insert_row(self, values):
+        self.treeview.insert("", tk.END, values = values)
+
+    def delete_row(self, row_item):
+        self.treeview.delete(row_item)
+
+    def clear_rows(self):
+        for row in self.treeview.get_children():
+            self.delete_row(row)
     
     def get_rows_values(self):
         rows = []
