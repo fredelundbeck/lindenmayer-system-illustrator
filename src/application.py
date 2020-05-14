@@ -1,5 +1,6 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+import widgets
 import re as regex
 import utilities as util
 import lsystem as lsys
@@ -231,119 +232,61 @@ class VariableTreeViewFrame(tk.Frame):
     
 
 class RulesFrame(tk.Frame):
-    def __init__(self, master = None, **kw):
-        super().__init__(master = master, **kw)
+    def __init__(self, master=None, **kw):
+        super().__init__(master=master, **kw)
 
         #Setup frames
-        self.label_frame = tk.LabelFrame(self, text = "Rules", font = ("", 9, "bold"))
-        self.entries_frame = tk.Frame(self.label_frame)
-        self.treeview_frame = tk.Frame(self)
-
-        #Setup rules treeview
-        self.treeview = ttk.Treeview(self.treeview_frame, 
-                                            columns = ["var", "mutation"],
-                                            show = "headings",
-                                            selectmode = "browse",
-                                            height = 3)
-        self.treeview.column("var", minwidth = 20, width = 40)
-        self.treeview.heading("var", text = "var")
-        self.treeview.column("mutation", minwidth = 20, width = 169)
-        self.treeview.heading("mutation", text = "mutation")
-
-        #Setup treeview vertical scrollbar
-        self.treeview_scrollbar = tk.Scrollbar(self.treeview_frame, 
-                                                    orient = tk.VERTICAL,
-                                                    command = self.treeview.yview)
-        self.treeview.configure(yscrollcommand = self.treeview_scrollbar.set)
-
-        #Setup entries
-        self.var_combobox = ttk.Combobox(self.entries_frame, 
-                                        state = "readonly", 
-                                        width = 3)
-        self.mutation_entry = tk.Entry(self.entries_frame)
-
-        #Setup labels
-        self.equals_label = tk.Label(self.entries_frame, text = "=")
+        self.label_frame = tk.LabelFrame(self, 
+                                        text = "Rules", 
+                                        font = ("", 12),
+                                        padx = 0, 
+                                        pady = 5)
+        self.input_frame = tk.Frame(self.label_frame)
+        self.entries_frame = tk.Frame(self.input_frame)
+        self.buttons_frame = tk.Frame(self.input_frame)
 
         #Setup buttons
-        self.submit_button = tk.Button(self.label_frame, 
-                                        text = "submit", 
-                                        width = 21,
-                                        state = tk.DISABLED,
-                                        command = self.submit_button_clicked_event)
+        self.add_button = tk.Button(self.buttons_frame, text = "Add")
+        self.delete_button = tk.Button(self.buttons_frame, text = "Delete")
 
-        #Setup event bindings
-        self.var_combobox.bind("<<ComboboxSelected>>", self.var_combobox_item_selected_event)
-        self.mutation_entry.bind("<KeyRelease>", self.mutation_entry_key_released_event)
+        #Setup entries
+        self.var_combobox = ttk.Combobox(self.entries_frame, width = 2)
+        self.mutation_entry = tk.Entry(self.entries_frame, 
+                                    font = ("", 9), 
+                                    relief = tk.FLAT,
+                                    highlightthickness = 1,
+                                    highlightbackground = "gray")
 
-        #Adjust grid weights
-        self.treeview_frame.columnconfigure(0, weight = 1)
-        self.treeview_frame.columnconfigure(1, weight = 0)
+        #Setup labels
+        self.var_label = tk.Label(self.entries_frame, text = "Var:")
+
+        #Setup treeview
+        self.treeview_frame = widgets.ScrollableTreeviewFrame(self.label_frame)
+        self.treeview_frame.configure_treeview(columns = ["var", "mut"],
+                                show = "headings",
+                                selectmode = "browse",
+                                height = 4)
+        self.treeview_frame.modify_heading("var", text = "Variable")
+        self.treeview_frame.modify_heading("mut", text = "Mutation")
+        self.treeview_frame.modify_column("var", minwidth = 30, width = 0)
+        self.treeview_frame.modify_column("mut", minwidth = 30, width = 0)
 
         #Placement
-        self.label_frame.pack(padx = 5, pady = 5, fill = tk.X)
-        self.entries_frame.pack(padx = 5, pady = 5)
-        self.treeview_frame.pack(padx = 5, pady = 5)
+        self.label_frame.pack(fill = tk.BOTH)
+        self.treeview_frame.pack(fill = tk.X, padx = 5, pady = (5, 0))
+        self.input_frame.pack(fill = tk.X, padx = 5, pady = 5)
 
-        self.treeview.grid(column = 0, row = 0)
-        self.treeview_scrollbar.grid(column = 1, row = 0, sticky = tk.N + tk.S)
-
-        self.var_combobox.grid(column = 0, row = 0)
-        self.equals_label.grid(column = 1, row = 0)
+        self.entries_frame.pack(side = tk.LEFT)
+        self.var_label.grid(column = 0, row = 0)
+        self.var_combobox.grid(column = 1, row = 0, padx = (0, 5))
         self.mutation_entry.grid(column = 2, row = 0)
 
-        self.submit_button.pack(pady = (0, 5))
-
-    def set_instances(self, variable_treeview_frame):
-        self.var_treeview_obj = variable_treeview_frame
-
-    def update_combobox_values(self):
-        '''
-        Updates the values of the variable combobox to match the var names in the
-        variable list.
-        '''
-        vars = set(self.var_treeview_obj.get_tree_rows_data(0))
-        cbox_text = self.var_combobox.get()
-
-        if cbox_text != "" and cbox_text not in vars:
-            self.var_combobox.set("")
-        if len(vars) == 0:
-            self.var_combobox["values"] = ""
-            self.var_combobox.set("")
-        else:
-            self.var_combobox["values"] = list(vars)
-
-        self.update_submit_button_status()
+        self.buttons_frame.pack(side = tk.RIGHT)
+        self.add_button.grid(column = 0, row = 0, padx = (0, 3))
+        self.delete_button.grid(column = 1, row = 0)
     
-    def update_submit_button_status(self):
-        '''
-        Checks if nessesary entries have been filled to submit rule to treeview list.
-        If, then submit button's state is set to normal.
-        '''
-        var = self.var_combobox.get()
-        mutation = self.mutation_entry.get()
-
-        if var != "" and len(mutation) > 0:
-            self.submit_button["state"] = tk.NORMAL
-        else:
-            self.submit_button["state"] = tk.DISABLED
-
-    def insert_rule(self, var, mutation):
-        '''
-        Inserts given rule into the rule treeview.
-        '''
-        self.treeview.insert("", tk.END, values = [var, mutation])
-
-    def submit_button_clicked_event(self):
-        var = self.var_combobox.get()
-        mutation = self.mutation_entry.get()
-        self.insert_rule(var, mutation)
-
-    def mutation_entry_key_released_event(self, args):
-        self.update_submit_button_status()
-
-    def var_combobox_item_selected_event(self, args):
-        self.update_submit_button_status()
+    def set_instances(self, variable_list_instance):
+        self.variable_list_instance = variable_list_instance
 
 class DrawFrame(tk.Frame):
     def __init__(self, master=None, **kw):
@@ -525,11 +468,11 @@ class LauncherFrame(tk.Frame):
 app = tk.Tk()
 
 app.title("Lindenmayer Systems Illustrator")
-app.geometry("950x700")
+app.geometry("1250x750")
 app.resizable(0,0)
 
 #Declare and initialize widgets
-leftframe = tk.Frame(app)
+leftframe = tk.Frame(app, padx = 5)
 drawframe = DrawFrame(app)
 
 varlist = VariableTreeViewFrame(leftframe)
@@ -544,8 +487,8 @@ varinput.set_instances(varlist, rules)
 rules.set_instances(varlist)
 
 #Placement
-leftframe.place(relx = 0, rely = 0, relwidth = 0.25, relheight = 1)
-drawframe.place(relx = 0.25, rely = 0, relwidth = 0.75, relheight =1)
+leftframe.place(relx = 0, rely = 0, relwidth = 0.3, relheight = 1)
+drawframe.place(relx = 0.3, rely = 0, relwidth = 0.7, relheight = 1)
 
 varinput.pack(anchor = tk.W, fill = tk.X)
 varlist.pack(anchor = tk.W, fill = tk.X)
