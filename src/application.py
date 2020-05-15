@@ -90,7 +90,7 @@ class VariablesFrame(tk.Frame):
         If not it highlights the value entry background with red.
         '''
         value = self.val_entry.get()
-        if util.isdigit(value) or value == "":
+        if util.is_str_digit(value) or value == "":
             self.val_entry["bg"] = "#FFFFFF"
         else:
             self.val_entry["bg"] = "#FFAAAA"
@@ -104,7 +104,7 @@ class VariablesFrame(tk.Frame):
         '''
         var_length = len(self.var_entry.get())
         func_item = self.func_combobox.get()
-        val_isdigit = util.isdigit(self.val_entry.get())
+        val_isdigit = util.is_str_digit(self.val_entry.get())
 
         if var_length > 0 and func_item != "" and (val_isdigit or func_item in ["Save", "Load"]):
             self.submit_button["state"] = tk.NORMAL
