@@ -162,45 +162,43 @@ class SettingsFrame(tk.Frame):
         self.position_x_label = tk.Label(self.input_frame, text = "Position X:")
         self.position_y_label = tk.Label(self.input_frame, text = "Position Y:")
         self.angle_label = tk.Label(self.input_frame, text = "Angle (deg):")
+        self.turn_angle_label = tk.Label(self.input_frame, text = "Turn angle (deg):")
 
         self.iteration_label = tk.Label(self.input_frame, text = "Iterations:")
-        self.line_start_thickness_label = tk.Label(self.input_frame, text = "Line start thickness:")
-        self.line_end_thickness_label = tk.Label(self.input_frame, text = "Line end thickness:")
-        self.line_type_label = tk.Label(self.input_frame, text = "Line type:")
+        self.line_start_thickness_label = tk.Label(self.input_frame, text = "Line thickness:")
+        self.step_length_label = tk.Label(self.input_frame, text = "Step length:")
 
         #Setup entries
         self.axiom_entry = widgets.Entry(self.input_frame, width = 8)
         self.position_x_entry = widgets.NumberEntry(self.input_frame, width = 8)
         self.position_y_entry = widgets.NumberEntry(self.input_frame, width = 8)
         self.angle_entry = widgets.NumberEntry(self.input_frame, width = 8)
+        self.turn_angle_entry = widgets.NumberEntry(self.input_frame, width = 8)
 
+        var = tk.IntVar(value = 4)
         self.iteration_spinbox = tk.Spinbox(
             self.input_frame, 
             width = 8, 
             from_ = 1, 
             to = 10,
+            textvariable = var,
             state = "readonly")
 
-        self.line_start_thickness_spinbox = tk.Spinbox(
+        self.line_thickness_spinbox = tk.Spinbox(
             self.input_frame, 
             width = 8,
             from_ = 1,
             to = 100,
             state = "readonly")
 
-        self.line_end_thickness_spinbox = tk.Spinbox(
-            self.input_frame, 
-            width = 8,
-            from_ = 1,
-            to = 100,
-            state = "readonly")
+        self.step_length_entry = widgets.NumberEntry(self.input_frame, width = 8)
 
-        self.line_type_combobox = ttk.Combobox(
-            self.input_frame, 
-            width = 7, 
-            state = "readonly",
-            values = ["Straight", "Curvy", "Arrow"])
-
+        #Insert default entry values
+        self.position_x_entry.insert(0, 0)
+        self.position_y_entry.insert(0, 0)
+        self.angle_entry.insert(0, 90)
+        self.turn_angle_entry.insert(0, 45)
+        self.step_length_entry.insert(0, 25)
 
         #Placement
         self.label_frame.pack(fill = tk.BOTH)
@@ -210,21 +208,22 @@ class SettingsFrame(tk.Frame):
         self.position_x_label.grid(column = 0, row = 1, sticky = tk.W, pady = (0,5))
         self.position_y_label.grid(column = 0, row = 2, sticky = tk.W, pady = (0,5))
         self.angle_label.grid(column = 0, row = 3, sticky = tk.W, pady = (0,5))
+        self.turn_angle_label.grid(column = 0, row = 4, sticky = tk.W, pady = (0,5))
 
         self.axiom_entry.grid(column = 1, row = 0, pady = (0,5))
         self.position_x_entry.grid(column = 1, row = 1, pady = (0,5))
         self.position_y_entry.grid(column = 1, row = 2, pady = (0,5))
         self.angle_entry.grid(column = 1, row = 3, pady = (0,5))
+        self.turn_angle_entry.grid(column = 1, row = 4, pady = (0,5))
 
         self.iteration_label.grid(column = 2, row = 0, sticky = tk.W, padx = (10, 0), pady = (0,5))
         self.line_start_thickness_label.grid(column = 2, row = 1, sticky = tk.W, padx = (10, 0), pady = (0,5))
-        self.line_end_thickness_label.grid(column = 2, row = 2, sticky = tk.W, padx = (10, 0), pady = (0,5))
-        self.line_type_label.grid(column = 2, row = 3, sticky = tk.W, padx = (10, 0), pady = (0,5))
+        self.step_length_label.grid(column = 2, row = 2, sticky = tk.W, padx = (10, 0), pady = (0,5))
 
-        self.iteration_spinbox.grid(column = 3, row = 0, pady = (0,5))
-        self.line_start_thickness_spinbox.grid(column = 3, row = 1, pady = (0,5))
-        self.line_end_thickness_spinbox.grid(column = 3, row = 2, pady = (0,5))
-        self.line_type_combobox.grid(column = 3, row = 3, pady = (0,5))
+        self.iteration_spinbox.grid(column = 3, row = 0, pady = (0, 5))
+        self.line_thickness_spinbox.grid(column = 3, row = 1, pady = (0, 5))
+        self.step_length_entry.grid(column = 3, row = 2, pady = (0, 5))
+
 
 
 
