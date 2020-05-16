@@ -5,10 +5,6 @@ Holds everything related to L-Systems
 import utilities as util
 import math
 
-#debug delete
-import tkinter as tk
-#
-
 class LSystem:
     def __init__(self, axiom, rules):
         self.axiom = axiom
@@ -81,14 +77,14 @@ def draw_lsystem(canvas : tk.Canvas, lsystem, symbols, start_pos,
     for index, char in enumerate(lsystem):
 
         #Continue to next char if no operation is associated with it
-        op = symbols.get(char, None)[0]
+        op = symbols.get(char, None)
         if op == None:
             continue
 
         #Try getting number value after symbol if it exists
         value = util.try_get_number_from_str(lsystem, index)
 
-        if op == "move_down":
+        if op[0] == "move_down":
             
             #Calculate end position and draw line
             new_pos = get_new_position(pos_x, pos_y, angle, step_length)
@@ -98,7 +94,7 @@ def draw_lsystem(canvas : tk.Canvas, lsystem, symbols, start_pos,
             pos_x = new_pos[0]
             pos_y = new_pos[1]
             
-        elif op == "move_up":
+        elif op[0] == "move_up":
             #Calculate end position 
             new_pos = get_new_position(pos_x, pos_y, angle, step_length)
 
@@ -106,7 +102,7 @@ def draw_lsystem(canvas : tk.Canvas, lsystem, symbols, start_pos,
             pos_x = new_pos[0]
             pos_y = new_pos[1]
 
-        elif op == "turn_right":
+        elif op[0] == "turn_right":
             #If reverse_turn is false, update angle normally
             if not directions_flipped:
                 angle = (angle + turn_angle_amount) % 360
@@ -114,7 +110,7 @@ def draw_lsystem(canvas : tk.Canvas, lsystem, symbols, start_pos,
             else:
                 angle = (angle - turn_angle_amount) % 360
 
-        elif op == "turn_left":
+        elif op[0] == "turn_left":
             #If reverse_turn is false, update angle normally
             if not directions_flipped:
                 angle = (angle - turn_angle_amount) % 360
@@ -122,11 +118,11 @@ def draw_lsystem(canvas : tk.Canvas, lsystem, symbols, start_pos,
             else:
                 angle = (angle + turn_angle_amount) % 360
 
-        elif op == "state_save":
+        elif op[0] == "state_save":
             #Save current state to states list
             states.append(((pos_x, pos_y), angle, color_num, directions_flipped))
 
-        elif op == "state_load":
+        elif op[0] == "state_load":
             #Pop last state from states list
             latest_state = states.pop()
 
@@ -138,73 +134,36 @@ def draw_lsystem(canvas : tk.Canvas, lsystem, symbols, start_pos,
             color_rgb = get_new_color(color_num, colors)
             directions_flipped = latest_state[3]
 
-        elif op == "color_up":
+        elif op[0] == "color_up":
             #Increment color by found or default value & update color_rgb
             color_num = (color_num + (symbols.get(char)[1] if value == None else value)) % 256
             color_rgb = get_new_color(color_num, colors)   
 
-        elif op == "color_down":
+        elif op[0] == "color_down":
             #Decrement color by found or default value & update color_rgb
             color_num = (color_num - (symbols.get(char)[1] if value == None else value)) % 256
             color_rgb = get_new_color(color_num, colors)    
 
-        elif op == "color_set":
+        elif op[0] == "color_set":
             #Set color to found value after symbol or reset to start_color
             color_num = value if value != None else start_color_num
 
-        elif op == "thickness_up":
+        elif op[0] == "thickness_up":
             #Increment line thickness by found or default value
             thickness = thickness + (symbols.get(char)[1] if value == None else value)
 
-        elif op == "thickness_down":
+        elif op[0] == "thickness_down":
             #Decrement line thickness by found or default value
             thickness = thickness - (symbols.get(char)[1] if value == None else value)
 
-        elif op == "thickness_set":
+        elif op[0] == "thickness_set":
             #Set thickness to found value after symbol or reset to start_thickness
             thickness = value if value != None else start_thickness
 
-        elif op == "multiply_step":
+        elif op[0] == "multiply_step":
             #Multiply step by found or default value
             step_length = step_length * (symbols.get(char)[1] if value == None else value)
 
-        elif op == "switch_directions":
+        elif op[0] == "switch_directions":
             #Set directions_flipped to what directions_flipped is not
             directions_flipped = not directions_flipped
-
-
-start_pos = (0, 0)
-start_rot = 90
-
-symbols = {
-    "F" : ("move_down", None),
-    "G" : ("move_up", None),
-    "+" : ("turn_right", None),
-    "-" : ("turn_left", None),
-    "[" : ("state_save", None),
-    "]" : ("state_load", None),
-    "#" : ("thickness_up", 1),
-    "%" : ("thickness_down", 1)
-}
-
-lsys = LSystem("F", [("F", "F-F+#+F-F")])
-next(lsys)
-next(lsys)
-next(lsys)
-
-app = tk.Tk()
-app.geometry("900x900")
-
-canvas = tk.Canvas(app, bg = "lightgreen")
-canvas.pack(fill = tk.BOTH, expand = True)
-
-#draw_lsystem(canvas, str(lsys), symbols, (450, 900), -80, 45, 20, 2)
-
-colors = ["#ff0000", "#0000ff"]
-mix_color = get_new_color(128, colors)
-
-print(mix_color)
-
-app.mainloop()
-
-
