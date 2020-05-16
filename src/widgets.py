@@ -7,6 +7,7 @@ import tkinter as tk
 import tkinter.colorchooser as colorchooser
 import tkinter.ttk as ttk
 import utilities as util
+import math 
 
 class ScrollableTreeviewFrame(tk.Frame):
     def __init__(self, master=None, **kw):
@@ -58,23 +59,32 @@ class ScrollableTreeviewFrame(tk.Frame):
         return rows
 
 class Entry(tk.Entry):
-    def __init__(self, master=None, **kw):
+    def __init__(self, master = None, max_chars = None, **kw):
         super().__init__(master=master, **kw)
+
+        self._max_chars = max_chars
 
         self.configure(
             font = ("", 9), 
             relief = tk.FLAT,
             highlightthickness = 1,
             highlightbackground = "gray")
+
+        self.bind("<KeyRelease>", self.on_entry_keyrelease)
+
+    def on_entry_keyrelease(self, event):
         
+        if self._max_chars != None and len(self.get()) > self._max_chars:
+            self.delete(self._max_chars, tk.END)
+
 
 class NumberEntry(Entry):
-    def __init__(self, master=None, **kw):
-        super().__init__(master=master, **kw)
+    def __init__(self, master = None, max_chars = None, **kw):
+        super().__init__(master=master, max_chars = max_chars, **kw)
 
-        self.bind("<KeyRelease>", self.on_key_release_event, add = "+")
+        self.bind("<KeyRelease>", self.on_number_entry_keyrelease, add = "+")
 
-    def on_key_release_event(self, args):
+    def on_number_entry_keyrelease(self, event):
         '''
         Checks if the value entry text can be converted to a number.
         If not it highlights the value entry background with red.
@@ -85,11 +95,34 @@ class NumberEntry(Entry):
         else:
             self["bg"] = "#ffaaaa"
 
+class NonNumberEntry(Entry):
+    def __init__(self, master=None, max_chars = None, **kw):
+        super().__init__(master=master, max_chars = max_chars, **kw)
+
+        self._is_legit = True
+
+        self.bind("<KeyRelease>", self.on_non_number_entry_keyrelease, add = "+")
+
+    def on_non_number_entry_keyrelease(self, event):
+        
+        value = self.get()
+        if util.is_str_digit(value) or value == " ":
+            self["bg"] = "#ffaaaa"
+            self._is_legit = False
+        else:
+            self["bg"] = "#ffffff"
+            self._is_legit = True
+
+    def is_legit(self):
+        return self._is_legit
+
+
 class ColorPaletteOptions(tk.Frame):
     def __init__(self, master=None, **kw):
         super().__init__(master=master, **kw)
         
         self._MAX_PALETTE_SIZE = 9
+        self._DEFAULT_COLOR = "#ffffff"
 
         self._colors = ["#ffffff"]
 
@@ -101,24 +134,32 @@ class ColorPaletteOptions(tk.Frame):
         self.colors_canvas = tk.Canvas(self,  
             height = 40, 
             relief = tk.GROOVE,
-            borderwidth = 4)
-
-        #Setup labels
+            borderwidth = 4,
+            cursor = "hand2")
 
         #Setup buttons
         self.add_button = tk.Button(
             self.buttons_frame_left, 
             text = "Add",
             command = self.on_add_button_click)
-            
-        self.remove_button = tk.Button(self.buttons_frame_left, text = "Remove")
+
+        self.remove_button = tk.Button(
+            self.buttons_frame_left, 
+            text = "Remove",
+            command = self.on_remove_button_click)
 
         self.randomize_button = tk.Button(
             self.buttons_frame_right, 
             text = "Randomize",
             command = self.on_randomize_button_click)
 
-        self.clear_button = tk.Button(self.buttons_frame_right, text = "Clear")
+        self.clear_button = tk.Button(
+            self.buttons_frame_right, 
+            text = "Clear",
+            command = self.on_clear_button_click)
+
+        #Setup event bindings
+        self.colors_canvas.bind("<Button-1>", self.on_color_canvas_click)
 
         #Placement
         self.colors_canvas.pack(fill = tk.X, padx = 10, pady = (5, 2))
@@ -132,9 +173,9 @@ class ColorPaletteOptions(tk.Frame):
         self.clear_button.grid(column = 1, row = 0)
         
 
-        self._draw_colors_canvas()
+        self.redraw_color_canvas()
 
-    def _draw_colors_canvas(self):
+    def redraw_color_canvas(self):
 
         color_quad_length = 288 / len(self._colors) #TODO: fix magic numbers for width & height
 
@@ -142,19 +183,18 @@ class ColorPaletteOptions(tk.Frame):
         for index, color in enumerate(self._colors):
             self.colors_canvas.create_rectangle(
                 3 + index * color_quad_length, 0,           #x1, y1
-                3 + (index + 1) * color_quad_length, 46,    #x2, y2
+                3 + (index + 1) * color_quad_length, 51,    #x2, y2
                 fill = self._colors[index],
                 width = 0)
 
-    def remove_color(self, index):
+    def remove_color_from_palette(self, index):
         self._colors.remove(self._colors[index])
-        self._draw_colors_canvas()
 
-    def reset_colors(self):
+    def clear_palette(self):
         self._colors.clear()
-        self._draw_colors_canvas()            
+        self._colors.append(self._DEFAULT_COLOR)
 
-    def generate_random_palette(self, amount):
+    def randomize_palette(self, amount):
         '''
         Generate a new random color palette
         '''
@@ -168,13 +208,37 @@ class ColorPaletteOptions(tk.Frame):
     #Event functions
 
     def on_randomize_button_click(self):
-        self.generate_random_palette(len(self._colors))
-        self._draw_colors_canvas()
+        self.randomize_palette(len(self._colors))
+        self.redraw_color_canvas()
 
     def on_add_button_click(self):
+        #If palette has less than 9 colors
         if len(self._colors) < self._MAX_PALETTE_SIZE:
+
+            #Open color dialog and return result
             color = self.pick_color()
-            if color != None:
+
+            #If color result is not None, append color to colors and redraw 
+            if color[0] != None:
                 self._colors.append(color[1])
-                self._draw_colors_canvas()
+                self.redraw_color_canvas()
+
+    def on_remove_button_click(self):
+        #If palette has more than one color
+        if len(self._colors) > 1:
+            self.remove_color_from_palette(len(self._colors) - 1)
+            self.redraw_color_canvas()       
+    
+    def on_clear_button_click(self):
+        self.clear_palette()
+        self.redraw_color_canvas()
+
+    def on_color_canvas_click(self, event):
+        color_index = math.floor(event.x / (296 / len(self._colors)))
+        new_color = self.pick_color()
+
+        if new_color[0] != None:
+            self._colors[color_index] = new_color[1]
+            self.redraw_color_canvas()
+
 

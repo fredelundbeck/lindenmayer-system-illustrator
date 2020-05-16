@@ -112,11 +112,20 @@ class RulesFrame(tk.Frame):
         self.buttons_frame = tk.Frame(self.input_frame)
 
         #Setup buttons
-        self.add_button = tk.Button(self.buttons_frame, text = "Add", state = tk.DISABLED)
-        self.delete_button = tk.Button(self.buttons_frame, text = "Delete", state = tk.DISABLED)
+        self.add_button = tk.Button(
+            self.buttons_frame, 
+            text = "Add",
+            state = tk.DISABLED,
+            command = self.on_add_button_click)
+
+        self.delete_button = tk.Button(
+            self.buttons_frame,
+            text = "Delete",
+            state = tk.DISABLED,
+            command = self.on_delete_button_click)
 
         #Setup entries
-        self.variable_entry = widgets.Entry(self.entries_frame, width = 2)
+        self.variable_entry = widgets.NonNumberEntry(self.entries_frame, 1, width = 2)
         self.mutation_entry = widgets.Entry(self.entries_frame)
 
         #Setup labels
@@ -135,6 +144,11 @@ class RulesFrame(tk.Frame):
         self.treeview.modify_column("var", minwidth = 30, width = 0)
         self.treeview.modify_column("mut", minwidth = 30, width = 0)
 
+        #Setup event bindings
+        self.treeview.treeview.bind("<<TreeviewSelect>>", self.on_treeview_selection)
+        self.variable_entry.bind("<KeyRelease>", self.on_var_entry_keyrelease, add = "+")
+        self.mutation_entry.bind("<KeyRelease>", self.on_mutation_entry_keyrelease, add = "+")
+
         #Placement
         self.label_frame.pack(fill = tk.BOTH)
         self.treeview.pack(fill = tk.X, padx = 5, pady = (5, 0))
@@ -148,6 +162,56 @@ class RulesFrame(tk.Frame):
         self.buttons_frame.pack(side = tk.RIGHT)
         self.add_button.grid(column = 0, row = 0, padx = (0, 3))
         self.delete_button.grid(column = 1, row = 0)
+
+    def update_add_button_state(self):
+        #If both variable and mutation entry has text and are legit
+        if (len(self.variable_entry.get()) > 0 and self.variable_entry.is_legit() and
+            len(self.mutation_entry.get()) > 0):
+            self.add_button["state"] = tk.NORMAL
+        else:
+            self.add_button["state"] = tk.DISABLED
+            
+    
+    def update_delete_button_state(self):
+        item_selected = self.treeview.treeview.focus()
+        
+        if item_selected != "":
+            self.delete_button["state"] = tk.NORMAL
+        else:
+            self.delete_button["state"] = tk.DISABLED
+
+    #Event functions
+
+    def on_treeview_selection(self, event):
+        self.update_delete_button_state()
+
+    def on_add_button_click(self):
+        #Add variable and mutation to treeview
+        self.treeview.insert_row((self.variable_entry.get(), self.mutation_entry.get()))
+
+        #Clear entries
+        self.variable_entry.delete(0, tk.END)
+        self.mutation_entry.delete(0, tk.END)
+
+        #Update add button state
+        self.update_add_button_state()
+
+        #Set focus on var entry
+        self.variable_entry.focus_set()
+
+    def on_delete_button_click(self):
+        selected_item = self.treeview.treeview.focus()
+        self.treeview.treeview.delete(selected_item)
+        self.update_delete_button_state()
+
+    def on_var_entry_keyrelease(self, event):
+        if len(self.variable_entry.get()) == 1 and self.variable_entry.is_legit():
+            self.mutation_entry.focus_set()
+
+        self.update_add_button_state()
+
+    def on_mutation_entry_keyrelease(self, event):
+        self.update_add_button_state()
 
 class SettingsFrame(tk.Frame):
     def __init__(self, master=None, **kw):
