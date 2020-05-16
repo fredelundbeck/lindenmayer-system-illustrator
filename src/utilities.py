@@ -1,6 +1,7 @@
 '''
 Holds utility functions
 '''
+import random
 
 def is_str_digit(str):
     '''
@@ -12,6 +13,18 @@ def is_str_digit(str):
         return True
     except ValueError:
         return False
+
+def clamp_number_between(min, max, number):
+    '''
+    Takes in a number and returns a value clamped between min & max.
+    If number is between min and max it's returned as is.
+    '''
+    if number < min:
+        return min
+    elif number > max:
+        return max
+
+    return number
 
 def try_get_number_from_str(string, from_index, can_be_decimal = True):
     '''
@@ -69,11 +82,11 @@ def linear_interpolate_color(color_from, color_to, fraction):
     b = linear_interpolate_number(color_from[2], color_to[2], fraction)
     return (r, g, b)
 
-def rgb_tuple_to_hex_string(color_dec):
+def rgb_tuple_to_hex_string(rgb_tuple):
     '''
     Takes in a RGB tuple (float, float, float) and returns the hex formatted RGB value (string)
     '''
-    return "#%02x%02x%02x" % (int(color_dec[0]), int(color_dec[1]), int(color_dec[2]))
+    return "#%02x%02x%02x" % (int(rgb_tuple[0]), int(rgb_tuple[1]), int(rgb_tuple[2]))
 
 def hex_string_to_rgb_tuple(hex_string):
     '''
@@ -81,3 +94,13 @@ def hex_string_to_rgb_tuple(hex_string):
     '''
     return (int(hex_string[1:3], 16), int(hex_string[3:5], 16), int(hex_string[5:7], 16))
 
+def get_random_color_hex_string():
+    '''
+    Generates and returns a random color hex string.
+    From #000000 to #FFFFFF
+    '''
+    r = random.randint(0, 255)
+    g = random.randint(0, 255)
+    b = random.randint(0, 255)
+
+    return rgb_tuple_to_hex_string((r, g, b))

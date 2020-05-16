@@ -66,7 +66,7 @@ def draw_lsystem(canvas : tk.Canvas, lsystem, symbols, start_pos,
     states = []
     pos_x = start_pos[0]
     pos_y = start_pos[1]
-    angle = start_angle
+    angrgb_tuplet_angle
     turn_angle_amount = turn_angle_amount
     step_length = start_step
     thickness = start_thickness

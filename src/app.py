@@ -155,9 +155,15 @@ class SettingsFrame(tk.Frame):
 
         #Setup frames
         self.label_frame = tk.LabelFrame(
-            self, text = "Settings", 
+            self, 
+            text = "Settings", 
             font = ("", 12),
             pady = 5)
+
+        self.color_palette_label_frame = tk.LabelFrame(
+            self.label_frame,
+            text = "Color palette",
+            font = ("", 12))
         
         self.input_frame = tk.Frame(self.label_frame)
 
@@ -197,6 +203,9 @@ class SettingsFrame(tk.Frame):
 
         self.step_length_entry = widgets.NumberEntry(self.input_frame, width = 8)
 
+        #Setup ColorPaletteOptions
+        self.color_palette_options = widgets.ColorPaletteOptions(self.color_palette_label_frame)
+
         #Insert default entry values
         self.position_x_entry.insert(0, 0)
         self.position_y_entry.insert(0, 0)
@@ -228,7 +237,8 @@ class SettingsFrame(tk.Frame):
         self.line_thickness_spinbox.grid(column = 3, row = 1, pady = (0, 5))
         self.step_length_entry.grid(column = 3, row = 2, pady = (0, 5))
 
-
+        self.color_palette_label_frame.pack(fill = tk.X, padx = 5)
+        self.color_palette_options.pack(fill = tk.X)
 
 
 app = tk.Tk()
