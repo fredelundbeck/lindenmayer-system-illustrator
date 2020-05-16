@@ -1,3 +1,8 @@
+'''
+Holds special widgets used in the 
+application.
+'''
+
 import tkinter as tk
 import tkinter.ttk as ttk
 import utilities as util
@@ -74,7 +79,7 @@ class NumberEntry(Entry):
         If not it highlights the value entry background with red.
         '''
         value = self.get()
-        if util.isdigit(value) or value == "":
+        if util.is_str_digit(value) or value == "":
             self["bg"] = "#FFFFFF"
         else:
             self["bg"] = "#FFAAAA"

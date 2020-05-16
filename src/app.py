@@ -74,15 +74,19 @@ class VariablesFrame(tk.Frame):
         self.load_defaults_button.grid(column = 0, row = 1, columnspan = 2, pady = (4, 0))
 
     def load_defaults_button_clicked_event(self, args):
-
+        '''
+        Loads the default symbol settings to the symbol treeview
+        '''
+        #Clear treeview first, so the settings aren't appended
         self.treeview.clear_rows()
 
+        #Insert each symbol into treeview
         self.treeview.insert_row(("F", "Move pen down"))
         self.treeview.insert_row(("G", "Move pen up"))
         self.treeview.insert_row(("+", "Turn right"))
         self.treeview.insert_row(("-", "Turn left"))
         self.treeview.insert_row(("!", "Switch turn directions"))
-        self.treeview.insert_row(("@", "Multiply step", 1.5))
+        self.treeview.insert_row(("@", "Multiply step", 0.6))
         self.treeview.insert_row(("[", "Save state"))
         self.treeview.insert_row(("]", "Load state"))
         self.treeview.insert_row(("<", "Color up", 1))

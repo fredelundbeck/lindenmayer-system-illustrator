@@ -1,3 +1,7 @@
+'''
+Holds everything related to L-Systems
+'''
+
 import utilities as util
 import math
 
@@ -35,7 +39,33 @@ def get_new_position(current_x, current_y, angle, step_length):
 
     return (new_x, new_y)
 
-def draw_lsystem(canvas : tk.Canvas, lsystem, symbols, start_pos, start_angle, turn_angle_amount, start_step, start_thickness, colors = ("#FFFFFF"), start_color = 0):
+def get_new_color(color_num, colors):
+
+    interval_length = 256 / (len(colors) - 1) #9 colors = 32 interval
+    color_a_index = math.floor(color_num / interval_length)
+    color_b_index = math.ceil(color_num / interval_length)
+
+    #If both color indexes are the same, the color_num is pointing at an exact color
+    #and we won't need to linear interpolate between two colors
+    if color_a_index == color_b_index:
+        return colors[color_a_index]
+
+    #Get percentage of color_num between color_a and color_b
+    percentage = (color_num - color_a_index * interval_length) / (color_b_index * interval_length - color_a_index * interval_length)
+    
+    #Convert color_a and color_b hex_strings to rgb tuple (r, g, b)
+    color_a_tuple = util.hex_string_to_rgb_tuple(colors[color_a_index])
+    color_b_tuple = util.hex_string_to_rgb_tuple(colors[color_b_index])
+
+    #Use linear interpolation to find color between the two colors
+    rgb_tuple = util.linear_interpolate_color(color_a_tuple, color_b_tuple, percentage)
+    
+    return util.rgb_tuple_to_hex_string(rgb_tuple)
+
+#TODO: Find better solution to this way to long argument list
+def draw_lsystem(canvas : tk.Canvas, lsystem, symbols, start_pos, 
+                start_angle, turn_angle_amount, start_step, start_thickness,
+                colors = ["#FFFFFF"], start_color_num = 0):
 
     states = []
     pos_x = start_pos[0]
@@ -44,7 +74,8 @@ def draw_lsystem(canvas : tk.Canvas, lsystem, symbols, start_pos, start_angle, t
     turn_angle_amount = turn_angle_amount
     step_length = start_step
     thickness = start_thickness
-    color = start_color
+    color_num = start_color_num % 256
+    color_rgb = get_new_color(color_num, colors)
     directions_flipped = False
 
     for index, char in enumerate(lsystem):
@@ -61,7 +92,7 @@ def draw_lsystem(canvas : tk.Canvas, lsystem, symbols, start_pos, start_angle, t
             
             #Calculate end position and draw line
             new_pos = get_new_position(pos_x, pos_y, angle, step_length)
-            canvas.create_line(pos_x, pos_y, new_pos[0], new_pos[1], width = thickness)
+            canvas.create_line(pos_x, pos_y, new_pos[0], new_pos[1], width = thickness, fill = color_rgb)
 
             #Update current position
             pos_x = new_pos[0]
@@ -93,7 +124,7 @@ def draw_lsystem(canvas : tk.Canvas, lsystem, symbols, start_pos, start_angle, t
 
         elif op == "state_save":
             #Save current state to states list
-            states.append(((pos_x, pos_y), angle, color, directions_flipped))
+            states.append(((pos_x, pos_y), angle, color_num, directions_flipped))
 
         elif op == "state_load":
             #Pop last state from states list
@@ -103,20 +134,23 @@ def draw_lsystem(canvas : tk.Canvas, lsystem, symbols, start_pos, start_angle, t
             pos_x = latest_state[0][0]
             pos_y = latest_state[0][1]
             angle = latest_state[1]
-            color = latest_state[2]
+            color_num = latest_state[2]
+            color_rgb = get_new_color(color_num, colors)
             directions_flipped = latest_state[3]
 
         elif op == "color_up":
-            #Increment color by found or default value
-            color = (color + (symbols.get(char)[1] if value == None else value)) % 256   
+            #Increment color by found or default value & update color_rgb
+            color_num = (color_num + (symbols.get(char)[1] if value == None else value)) % 256
+            color_rgb = get_new_color(color_num, colors)   
 
         elif op == "color_down":
-            #Decrement color by found or default value
-            color = (color - (symbols.get(char)[1] if value == None else value)) % 256 
+            #Decrement color by found or default value & update color_rgb
+            color_num = (color_num - (symbols.get(char)[1] if value == None else value)) % 256
+            color_rgb = get_new_color(color_num, colors)    
 
         elif op == "color_set":
             #Set color to found value after symbol or reset to start_color
-            color = value if value != None else start_color
+            color_num = value if value != None else start_color_num
 
         elif op == "thickness_up":
             #Increment line thickness by found or default value
@@ -164,9 +198,13 @@ app.geometry("900x900")
 canvas = tk.Canvas(app, bg = "lightgreen")
 canvas.pack(fill = tk.BOTH, expand = True)
 
-draw_lsystem(canvas, str(lsys), symbols, (450, 900), -80, 45, 20, 2)
+#draw_lsystem(canvas, str(lsys), symbols, (450, 900), -80, 45, 20, 2)
+
+colors = ["#ff0000", "#0000ff"]
+mix_color = get_new_color(128, colors)
+
+print(mix_color)
 
 app.mainloop()
 
 
-        
