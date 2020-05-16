@@ -1,7 +1,7 @@
-app=app.py
+APP=app.py
 
 default:
-	py $(app)
+	py $(APP)
 
 test:
 	

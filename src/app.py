@@ -1,6 +1,10 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 import widgets
+import os
+
+#Get current working directory
+cwd = os.path.split(os.getcwd())[0]
 
 class VariablesFrame(tk.Frame):
     def __init__(self, master=None, **kw):
@@ -23,7 +27,7 @@ class VariablesFrame(tk.Frame):
         self.operation_label = tk.Label(self.input_frame, text = "f(x):")
 
         #Setup entries
-        self.variable_entry = widgets.Entry(self.input_frame, width = 6)
+        self.variable_entry = widgets.NonNumberEntry(self.input_frame, 1, width = 6)
         self.value_entry = widgets.NumberEntry(self.input_frame, width = 6)
         self.operation_combobox = ttk.Combobox(
             self.input_frame,
@@ -95,6 +99,18 @@ class VariablesFrame(tk.Frame):
         self.treeview.insert_row(("(", "Thickness up", 1))
         self.treeview.insert_row((")", "Thickness down", 1))
         self.treeview.insert_row(("&", "Thickness set", 0))
+
+        #Clear entries for text
+        self.clear_entries()
+
+        #Set focus on frame again
+        self.focus_set()
+
+    def clear_entries(self):
+        self.variable_entry.delete(0, tk.END)
+        self.value_entry.delete(0, tk.END)
+        self.operation_combobox.set("")
+
 
 class RulesFrame(tk.Frame):
     def __init__(self, master=None, **kw):
@@ -241,6 +257,7 @@ class SettingsFrame(tk.Frame):
         self.iteration_label = tk.Label(self.input_frame, text = "Iterations:")
         self.line_start_thickness_label = tk.Label(self.input_frame, text = "Line thickness:")
         self.step_length_label = tk.Label(self.input_frame, text = "Step length:")
+        self.start_color_label = tk.Label(self.input_frame, text = "Start color:")
 
         #Setup entries
         self.axiom_entry = widgets.Entry(self.input_frame, width = 8)
@@ -256,16 +273,19 @@ class SettingsFrame(tk.Frame):
             from_ = 1, 
             to = 10,
             textvariable = var,
-            state = "readonly")
+            state = "readonly",
+            cursor = "arrow")
 
         self.line_thickness_spinbox = tk.Spinbox(
             self.input_frame, 
             width = 8,
             from_ = 1,
             to = 100,
-            state = "readonly")
+            state = "readonly",
+            cursor = "arrow")
 
         self.step_length_entry = widgets.NumberEntry(self.input_frame, width = 8)
+        self.start_color_entry = widgets.NumberEntry(self.input_frame, 3, width = 8)
 
         #Setup ColorPaletteOptions
         self.color_palette_options = widgets.ColorPaletteOptions(self.color_palette_label_frame)
@@ -276,6 +296,7 @@ class SettingsFrame(tk.Frame):
         self.angle_entry.insert(0, 90)
         self.turn_angle_entry.insert(0, 45)
         self.step_length_entry.insert(0, 25)
+        self.start_color_entry.insert(0, 0)
 
         #Placement
         self.label_frame.pack(fill = tk.BOTH)
@@ -293,21 +314,45 @@ class SettingsFrame(tk.Frame):
         self.angle_entry.grid(column = 1, row = 3, pady = (0,5))
         self.turn_angle_entry.grid(column = 1, row = 4, pady = (0,5))
 
-        self.iteration_label.grid(column = 2, row = 0, sticky = tk.W, padx = (10, 0), pady = (0,5))
-        self.line_start_thickness_label.grid(column = 2, row = 1, sticky = tk.W, padx = (10, 0), pady = (0,5))
-        self.step_length_label.grid(column = 2, row = 2, sticky = tk.W, padx = (10, 0), pady = (0,5))
+        self.iteration_label.grid(column = 2, row = 0, sticky = tk.W, padx = (10, 0), pady = (0, 5))
+        self.line_start_thickness_label.grid(column = 2, row = 1, sticky = tk.W, padx = (10, 0), pady = (0, 5))
+        self.step_length_label.grid(column = 2, row = 2, sticky = tk.W, padx = (10, 0), pady = (0, 5))
+        self.start_color_label.grid(column = 2, row = 3, sticky = tk.W, padx = (10, 0), pady = (0, 5))
 
         self.iteration_spinbox.grid(column = 3, row = 0, pady = (0, 5))
         self.line_thickness_spinbox.grid(column = 3, row = 1, pady = (0, 5))
         self.step_length_entry.grid(column = 3, row = 2, pady = (0, 5))
+        self.start_color_entry.grid(column = 3, row = 3, pady = (0, 5))
 
         self.color_palette_label_frame.pack(fill = tk.X, padx = 5)
         self.color_palette_options.pack(fill = tk.X)
 
+class DrawButtonFrame(tk.Frame):
+    def __init__(self, master=None, **kw):
+        super().__init__(master=master, **kw)
+
+        #Setup draw button icon
+        icon_image = tk.PhotoImage(file = cwd + r"\resources\drawing.png")
+
+        #Setup button
+        self.draw_button = tk.Button(
+            self, 
+            text = "Draw",
+            font = ("", 14, "bold"),
+            bg = "grey",
+            fg = "white",
+            image = icon_image,
+            compound = tk.RIGHT)
+
+        self.draw_button.image = icon_image
+
+        #Placement
+        self.draw_button.pack(fill = tk.BOTH, expand = True, padx = 5, pady = (5, 0))
+
 
 app = tk.Tk()
 app.title("Lindenmayer Systems Illustrator")
-app.geometry("1150x750")
+app.geometry("1150x770")
 app.resizable(0,0)
 
 #Setup main frames
@@ -318,6 +363,7 @@ drawing_frame = tk.Frame(app, bg = "#212121")
 variables_frame = VariablesFrame(control_frame)
 rules_frame = RulesFrame(control_frame)
 settings_frame = SettingsFrame(control_frame)
+draw_button_frame = DrawButtonFrame(control_frame)
 
 #Placement
 control_frame.place(relx = 0, rely = 0, relwidth = 0.3, relheight = 1)
@@ -326,5 +372,7 @@ drawing_frame.place(relx = 0.3, rely = 0, relwidth = 0.7, relheight = 1)
 variables_frame.pack(fill = tk.X)
 rules_frame.pack(fill = tk.X)
 settings_frame.pack(fill = tk.X)
+draw_button_frame.pack(fill = tk.BOTH, expand = True)
+
 
 app.mainloop()
