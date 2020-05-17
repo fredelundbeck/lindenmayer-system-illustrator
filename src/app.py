@@ -1,6 +1,8 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 import widgets
+import lsystem as lsys
+import utilities as util
 import os
 
 #Get current working directory
@@ -9,6 +11,9 @@ cwd = os.path.split(os.getcwd())[0]
 class VariablesFrame(tk.Frame):
     def __init__(self, master=None, **kw):
         super().__init__(master=master, **kw)
+
+        #Internal data
+        self._symbols = {}
 
         #Setup frames
         self.label_frame = tk.LabelFrame(
@@ -77,6 +82,11 @@ class VariablesFrame(tk.Frame):
         self.delete_button.grid(column = 1, row = 0)
         self.load_defaults_button.grid(column = 0, row = 1, columnspan = 2, pady = (4, 0))
 
+    def insert_symbol(self, symbol, op, default_val = None):
+        self.treeview.insert_row((symbol, op, default_val))
+        self._symbols[symbol] = (util.op_conversion_dict[op], default_val)
+
+
     def load_defaults_button_clicked_event(self, args):
         '''
         Loads the default symbol settings to the symbol treeview
@@ -84,21 +94,21 @@ class VariablesFrame(tk.Frame):
         #Clear treeview first, so the settings aren't appended
         self.treeview.clear_rows()
 
-        #Insert each symbol into treeview
-        self.treeview.insert_row(("F", "Move pen down"))
-        self.treeview.insert_row(("G", "Move pen up"))
-        self.treeview.insert_row(("+", "Turn right"))
-        self.treeview.insert_row(("-", "Turn left"))
-        self.treeview.insert_row(("!", "Switch turn directions"))
-        self.treeview.insert_row(("@", "Multiply step", 0.6))
-        self.treeview.insert_row(("[", "Save state"))
-        self.treeview.insert_row(("]", "Load state"))
-        self.treeview.insert_row(("<", "Color up", 1))
-        self.treeview.insert_row((">", "Color down", 1))
-        self.treeview.insert_row(("%", "Color set", 0))
-        self.treeview.insert_row(("(", "Thickness up", 1))
-        self.treeview.insert_row((")", "Thickness down", 1))
-        self.treeview.insert_row(("&", "Thickness set", 0))
+        #Insert each symbol into treeview and symbols dict
+        self.insert_symbol("F", "Move pen down")
+        self.insert_symbol("G", "Move pen up")
+        self.insert_symbol("+", "Turn right")
+        self.insert_symbol("-", "Turn left")
+        self.insert_symbol("!", "Switch turn directions")
+        self.insert_symbol("@", "Multiply step", 0.6)
+        self.insert_symbol("[", "Save state")
+        self.insert_symbol("]", "Load state")
+        self.insert_symbol("<", "Color up", 1)
+        self.insert_symbol(">", "Color down", 1)
+        self.insert_symbol("%", "Color set")
+        self.insert_symbol("(", "Thickness up", 1)
+        self.insert_symbol(")", "Thickness down", 1)
+        self.insert_symbol("&", "Thickness set")
 
         #Clear entries for text
         self.clear_entries()
@@ -111,10 +121,16 @@ class VariablesFrame(tk.Frame):
         self.value_entry.delete(0, tk.END)
         self.operation_combobox.set("")
 
+    def get_symbols(self):
+        return self._symbols
+
 
 class RulesFrame(tk.Frame):
     def __init__(self, master=None, **kw):
         super().__init__(master=master, **kw)
+
+        #Internal data
+        self._rules = []
 
         #Setup frames
         self.label_frame = tk.LabelFrame(
@@ -196,14 +212,29 @@ class RulesFrame(tk.Frame):
         else:
             self.delete_button["state"] = tk.DISABLED
 
+    def insert_rule(self, var, mutation):
+        self.treeview.insert_row((var, mutation))
+        self._rules.append((var, mutation))
+
+    def delete_rule(self, iid):
+        values = self.treeview.treeview.item(iid, "values")
+        self._rules.remove(values)       
+        self.treeview.delete_row(iid)
+        
+
+    def get_rules(self):
+        return self._rules
+
     #Event functions
+
+        last_selected = 0
 
     def on_treeview_selection(self, event):
         self.update_delete_button_state()
 
     def on_add_button_click(self):
         #Add variable and mutation to treeview
-        self.treeview.insert_row((self.variable_entry.get(), self.mutation_entry.get()))
+        self.insert_rule(self.variable_entry.get(), self.mutation_entry.get())
 
         #Clear entries
         self.variable_entry.delete(0, tk.END)
@@ -217,7 +248,7 @@ class RulesFrame(tk.Frame):
 
     def on_delete_button_click(self):
         selected_item = self.treeview.treeview.focus()
-        self.treeview.treeview.delete(selected_item)
+        self.delete_rule(selected_item)
         self.update_delete_button_state()
 
     def on_var_entry_keyrelease(self, event):
@@ -327,6 +358,22 @@ class SettingsFrame(tk.Frame):
         self.color_palette_label_frame.pack(fill = tk.X, padx = 5)
         self.color_palette_options.pack(fill = tk.X)
 
+    def get_color_palette(self):
+        return self.color_palette_options._colors
+
+    def get_settings_dict(self):
+        return {
+            "axiom" : self.axiom_entry.get(),
+            "pos_x" : float(self.position_x_entry.get()),
+            "pos_y" : float(self.position_y_entry.get()),
+            "angle" : int(self.angle_entry.get()),
+            "turn_angle" : int(self.turn_angle_entry.get()),
+            "iteration" : int(self.iteration_spinbox.get()),
+            "line_thickness" : int(self.line_thickness_spinbox.get()),
+            "step_length" : int(self.step_length_entry.get()),
+            "start_color" : int(self.start_color_entry.get())
+        }
+
 class DrawButtonFrame(tk.Frame):
     def __init__(self, master=None, **kw):
         super().__init__(master=master, **kw)
@@ -341,12 +388,41 @@ class DrawButtonFrame(tk.Frame):
             bg = "grey",
             fg = "white",
             image = icon_image,
-            compound = tk.RIGHT)
+            compound = tk.RIGHT,
+            command = self.on_draw_button_click)
 
         self.draw_button.image = icon_image
 
         #Placement
         self.draw_button.pack(fill = tk.BOTH, expand = True, padx = 5, pady = (5, 0))
+
+    def on_draw_button_click(self):
+        symbols = variables_frame.get_symbols()
+        rules = rules_frame.get_rules()
+        settings = settings_frame.get_settings_dict()
+        colors = settings_frame.get_color_palette()
+
+        #Prepare lsystem object
+        lsystem = lsys.LSystem(settings["axiom"], rules)
+
+        #Don't exactly know why im iterating the lsystem like this?
+        for _ in range(settings["iteration"]):
+            next(lsystem)
+        
+        #Clear canvas before drawing
+        drawing_frame.draw_canvas.clear_canvas()
+
+        lsys.draw_lsystem(
+            drawing_frame.draw_canvas, 
+            str(lsystem), 
+            symbols,
+            (settings["pos_x"], settings["pos_y"]),
+            settings["angle"],
+            settings["turn_angle"],
+            settings["step_length"],
+            settings["line_thickness"],
+            colors,
+            settings["start_color"])
 
 class CanvasFrame(tk.Frame):
     def __init__(self, master=None, **kw):
@@ -381,6 +457,5 @@ variables_frame.pack(fill = tk.X)
 rules_frame.pack(fill = tk.X)
 settings_frame.pack(fill = tk.X)
 draw_button_frame.pack(fill = tk.BOTH, expand = True)
-
 
 app.mainloop()

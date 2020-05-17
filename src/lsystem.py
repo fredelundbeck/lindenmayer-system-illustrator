@@ -4,6 +4,7 @@ Holds everything related to L-Systems
 
 import utilities as util
 import math
+from tkinter import Canvas
 
 class LSystem:
     def __init__(self, axiom, rules):
@@ -59,19 +60,21 @@ def get_new_color(color_num, colors):
     return util.rgb_tuple_to_hex_string(rgb_tuple)
 
 #TODO: Find better solution to this way to long argument list
-def draw_lsystem(canvas : tk.Canvas, lsystem, symbols, start_pos, 
+def draw_lsystem(canvas : Canvas, lsystem, symbols, start_pos, 
                 start_angle, turn_angle_amount, start_step, start_thickness,
                 colors = ["#FFFFFF"], start_color_num = 0):
 
+    multiple_colors = len(colors) > 1
+
     states = []
-    pos_x = start_pos[0]
-    pos_y = start_pos[1]
-    angrgb_tuplet_angle
+    pos_x = canvas.winfo_width() * ((start_pos[0] + 1) / 2)
+    pos_y = canvas.winfo_height() * ((start_pos[1] + 1) / 2)
+    angle = start_angle * -1
     turn_angle_amount = turn_angle_amount
     step_length = start_step
     thickness = start_thickness
     color_num = start_color_num % 256
-    color_rgb = get_new_color(color_num, colors)
+    color_rgb = get_new_color(color_num, colors) if multiple_colors else colors[0]
     directions_flipped = False
 
     for index, char in enumerate(lsystem):
@@ -120,7 +123,7 @@ def draw_lsystem(canvas : tk.Canvas, lsystem, symbols, start_pos,
 
         elif op[0] == "state_save":
             #Save current state to states list
-            states.append(((pos_x, pos_y), angle, color_num, directions_flipped))
+            states.append(((pos_x, pos_y), angle, color_num, step_length, directions_flipped))
 
         elif op[0] == "state_load":
             #Pop last state from states list
@@ -131,20 +134,27 @@ def draw_lsystem(canvas : tk.Canvas, lsystem, symbols, start_pos,
             pos_y = latest_state[0][1]
             angle = latest_state[1]
             color_num = latest_state[2]
-            color_rgb = get_new_color(color_num, colors)
-            directions_flipped = latest_state[3]
+            color_rgb = get_new_color(color_num, colors) if multiple_colors else colors[0]
+            step_length = latest_state[3]
+            directions_flipped = latest_state[4]
 
         elif op[0] == "color_up":
+            if not multiple_colors:
+                continue
             #Increment color by found or default value & update color_rgb
             color_num = (color_num + (symbols.get(char)[1] if value == None else value)) % 256
             color_rgb = get_new_color(color_num, colors)   
 
         elif op[0] == "color_down":
+            if not multiple_colors:
+                continue
             #Decrement color by found or default value & update color_rgb
             color_num = (color_num - (symbols.get(char)[1] if value == None else value)) % 256
             color_rgb = get_new_color(color_num, colors)    
 
         elif op[0] == "color_set":
+            if not multiple_colors:
+                continue
             #Set color to found value after symbol or reset to start_color
             color_num = value if value != None else start_color_num
 

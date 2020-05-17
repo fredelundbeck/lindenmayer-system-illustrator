@@ -104,3 +104,31 @@ def get_random_color_hex_string():
     b = random.randint(0, 255)
 
     return rgb_tuple_to_hex_string((r, g, b))
+
+op_conversion_dict = {
+    "Move pen down" : "move_down", 
+    "Move pen up" : "move_up", 
+    "Turn right" : "turn_right", 
+    "Turn left" : "turn_left",
+    "Multiply step" : "multiply_step", 
+    "Color up" : "color_up", 
+    "Color down" : "color_down", 
+    "Color set" : "color_set", 
+    "Switch turn directions" : "switch_directions",  
+    "Thickness up" : "thickness_up", 
+    "Thickness down" : "thickness_down", 
+    "Thickness set" : "thickness_set", 
+    "Save state" : "state_save", 
+    "Load state" : "state_load"
+}
+
+def get_op_code_from_readable_op(text_op):
+    return op_conversion_dict[text_op]
+
+def normalized_to_canvas_coordinates(canvas_width, canvas_height, 
+    min_coords, max_coords, coords):
+        
+        canvas_x_pos = canvas_width * ((coords[0] + max_coords[0]) / 2)
+        canvas_y_pos = canvas_height * ((coords[1] + max_coords[1]) / 2)
+
+        return (canvas_x_pos, canvas_y_pos)

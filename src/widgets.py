@@ -58,6 +58,12 @@ class ScrollableTreeviewFrame(tk.Frame):
             rows.append(self.treeview.item(row)["values"])
         return rows
 
+    def convert_iid_to_int(self, iid):
+        try:
+            return int(iid[1:]) - 1
+        except ValueError:
+            return None 
+
 class Entry(tk.Entry):
     def __init__(self, master = None, max_chars = None, **kw):
         super().__init__(master=master, **kw)
