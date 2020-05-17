@@ -13,7 +13,7 @@ class VariablesFrame(tk.Frame):
         super().__init__(master=master, **kw)
 
         #Internal data
-        self._symbols = {}
+        self._symbols = []
 
         #Setup frames
         self.label_frame = tk.LabelFrame(
@@ -83,7 +83,7 @@ class VariablesFrame(tk.Frame):
         self.load_defaults_button.grid(column = 0, row = 1, columnspan = 2, pady = (4, 0))
 
     def insert_symbol(self, symbol, op, default_val = None):
-        self.treeview.insert_row((symbol, op, default_val))
+        self.treeview._insert_row((symbol, op, default_val))
         self._symbols[symbol] = (util.op_conversion_dict[op], default_val)
 
 
@@ -91,24 +91,26 @@ class VariablesFrame(tk.Frame):
         '''
         Loads the default symbol settings to the symbol treeview
         '''
-        #Clear treeview first, so the settings aren't appended
-        self.treeview.clear_rows()
+        #Clear symbols first, so it won't append
+        self._symbols.clear()
 
         #Insert each symbol into treeview and symbols dict
-        self.insert_symbol("F", "Move pen down")
-        self.insert_symbol("G", "Move pen up")
-        self.insert_symbol("+", "Turn right")
-        self.insert_symbol("-", "Turn left")
-        self.insert_symbol("!", "Switch turn directions")
-        self.insert_symbol("@", "Multiply step", 0.6)
-        self.insert_symbol("[", "Save state")
-        self.insert_symbol("]", "Load state")
-        self.insert_symbol("<", "Color up", 1)
-        self.insert_symbol(">", "Color down", 1)
-        self.insert_symbol("%", "Color set")
-        self.insert_symbol("(", "Thickness up", 1)
-        self.insert_symbol(")", "Thickness down", 1)
-        self.insert_symbol("&", "Thickness set")
+        self._symbols.append(("F", "Move pen down"))
+        self._symbols.append(("G", "Move pen up"))
+        self._symbols.append(("+", "Turn right"))
+        self._symbols.append(("-", "Turn left"))
+        self._symbols.append(("!", "Switch turn directions"))
+        self._symbols.append(("@", "Multiply step", 0.6))
+        self._symbols.append(("[", "Save state"))
+        self._symbols.append(("]", "Load state"))
+        self._symbols.append(("<", "Color up", 1))
+        self._symbols.append((">", "Color down", 1))
+        self._symbols.append(("%", "Color set"))
+        self._symbols.append(("(", "Thickness up", 1))
+        self._symbols.append((")", "Thickness down", 1))
+        self._symbols.append(("&", "Thickness set"))
+
+        self.treeview.update_rows(self._symbols)
 
         #Clear entries for text
         self.clear_entries()
@@ -122,7 +124,13 @@ class VariablesFrame(tk.Frame):
         self.operation_combobox.set("")
 
     def get_symbols(self):
-        return self._symbols
+
+        #Convert to dictionary first
+        dictionary = {}
+        for symbol in self._symbols:
+            dictionary[symbol[0]] = (util.op_conversion_dict[symbol[1]], symbol[2] if len(symbol) > 2 else None)
+        
+        return dictionary
 
 
 class RulesFrame(tk.Frame):
@@ -149,6 +157,12 @@ class RulesFrame(tk.Frame):
             text = "Add",
             state = tk.DISABLED,
             command = self.on_add_button_click)
+
+        self.edit_button = tk.Button(
+            self.buttons_frame,
+            text = "Edit",
+            state = tk.DISABLED,
+            command = self.on_edit_button_click)
 
         self.delete_button = tk.Button(
             self.buttons_frame,
@@ -193,63 +207,116 @@ class RulesFrame(tk.Frame):
 
         self.buttons_frame.pack(side = tk.RIGHT)
         self.add_button.grid(column = 0, row = 0, padx = (0, 3))
-        self.delete_button.grid(column = 1, row = 0)
+        self.edit_button.grid(column = 1, row = 0, padx = (0, 3))
+        self.delete_button.grid(column = 2, row = 0)
 
     def update_add_button_state(self):
+
+        var_exists = False
+        current_var = self.variable_entry.get()
+        
+        #Check if current variable already exists in rules list
+        for rule in self._rules:
+            if current_var == rule[0]:
+                var_exists = True
+
+                #Enable the edit button
+                self.edit_button["state"] = tk.NORMAL
+
+
         #If both variable and mutation entry has text and are legit
         if (len(self.variable_entry.get()) > 0 and self.variable_entry.is_legit() and
-            len(self.mutation_entry.get()) > 0):
+            len(self.mutation_entry.get()) > 0) and not var_exists:
             self.add_button["state"] = tk.NORMAL
         else:
             self.add_button["state"] = tk.DISABLED
             
-    
-    def update_delete_button_state(self):
-        item_selected = self.treeview.treeview.focus()
-        
-        if item_selected != "":
-            self.delete_button["state"] = tk.NORMAL
-        else:
-            self.delete_button["state"] = tk.DISABLED
 
     def insert_rule(self, var, mutation):
-        self.treeview.insert_row((var, mutation))
         self._rules.append((var, mutation))
+        self.treeview.update_rows(self._rules)
 
-    def delete_rule(self, iid):
-        values = self.treeview.treeview.item(iid, "values")
-        self._rules.remove(values)       
-        self.treeview.delete_row(iid)
+    def delete_rule(self, index):
+        self._rules.remove(self._rules[index])
+        self.treeview.update_rows(self._rules)
         
-
     def get_rules(self):
         return self._rules
 
+    def reenter_selected_in_entries(self):
+        #Get iid from treeview focus and retrieve values tuple
+        selected_iid = self.treeview.treeview.focus()
+        values = self.treeview.treeview.item(selected_iid)["values"]
+
+        #Delete text already in entries
+        self.variable_entry.delete(0, tk.END)
+        self.mutation_entry.delete(0, tk.END)
+
+        #Insert selected values in entries
+        self.variable_entry.insert(0, values[0])
+        self.mutation_entry.insert(0, values[1])
+    
+    def clear_entries(self):
+        self.variable_entry.delete(0, tk.END)
+        self.mutation_entry.delete(0, tk.END)
+
+
     #Event functions
 
-        last_selected = 0
-
     def on_treeview_selection(self, event):
-        self.update_delete_button_state()
+        #Add selected values in entries again & 
+        #update delete button state
+        self.reenter_selected_in_entries()
+        self.delete_button["state"] = tk.NORMAL
 
     def on_add_button_click(self):
         #Add variable and mutation to treeview
         self.insert_rule(self.variable_entry.get(), self.mutation_entry.get())
 
         #Clear entries
-        self.variable_entry.delete(0, tk.END)
-        self.mutation_entry.delete(0, tk.END)
+        self.clear_entries()
 
         #Update add button state
         self.update_add_button_state()
 
         #Set focus on var entry
         self.variable_entry.focus_set()
+    
+    def on_edit_button_click(self):
 
+        #Disable the edit button
+        self.edit_button["state"] = tk.DISABLED
+
+        #Get variable name and mutation to edit
+        var_edit = self.variable_entry.get()
+        mutation_edit = self.mutation_entry.get()
+
+        #Find index of variable in rules and change it's value
+        for i, rule in enumerate(self._rules):
+            if rule[0] == var_edit:
+                self._rules[i] = (var_edit, mutation_edit)
+                break
+        
+        #Refresh the treeview with new updated rules list
+        self.treeview.update_rows(self._rules)
+
+        #Clear entries
+        self.clear_entries()
+
+        #Remove focus from entries by focusing on frame
+        self.focus_set()
+
+        
     def on_delete_button_click(self):
+        #Get selected item so we can get the index of the selected item afterwards
         selected_item = self.treeview.treeview.focus()
-        self.delete_rule(selected_item)
-        self.update_delete_button_state()
+        selected_index = self.treeview.treeview.index(selected_item)
+        
+        #Delete the selected item
+        self.delete_rule(selected_index)
+
+        self.delete_button["state"] = tk.DISABLED
+        self.clear_entries()
 
     def on_var_entry_keyrelease(self, event):
         if len(self.variable_entry.get()) == 1 and self.variable_entry.is_legit():
@@ -397,12 +464,14 @@ class DrawButtonFrame(tk.Frame):
         self.draw_button.pack(fill = tk.BOTH, expand = True, padx = 5, pady = (5, 0))
 
     def on_draw_button_click(self):
+
+        #Gather information for drawing
         symbols = variables_frame.get_symbols()
         rules = rules_frame.get_rules()
         settings = settings_frame.get_settings_dict()
         colors = settings_frame.get_color_palette()
 
-        #Prepare lsystem object
+        #Initialize lsystem object
         lsystem = lsys.LSystem(settings["axiom"], rules)
 
         #Don't exactly know why im iterating the lsystem like this?

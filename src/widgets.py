@@ -42,27 +42,24 @@ class ScrollableTreeviewFrame(tk.Frame):
     def modify_column(self, column, **kw):
         self.treeview.column(column, **kw)
 
-    def insert_row(self, values):
+    def update_rows(self, row_list):
+        #Delete everything and insert list
+        self.__clear_rows()
+        for row in row_list:
+            self.__insert_row(row)
+
+    def __insert_row(self, values):
         self.treeview.insert("", tk.END, values = values)
 
-    def delete_row(self, row_item):
-        self.treeview.delete(row_item)
-
-    def clear_rows(self):
+    def __clear_rows(self):
         for row in self.treeview.get_children():
-            self.delete_row(row)
+            self.treeview.delete(row)
     
-    def get_rows_values(self):
+    def get_row_values(self):
         rows = []
         for row in self.treeview.get_children():
             rows.append(self.treeview.item(row)["values"])
         return rows
-
-    def convert_iid_to_int(self, iid):
-        try:
-            return int(iid[1:]) - 1
-        except ValueError:
-            return None 
 
 class Entry(tk.Entry):
     def __init__(self, master = None, max_chars = None, **kw):
