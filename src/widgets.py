@@ -242,3 +242,66 @@ class ColorPaletteOptions(tk.Frame):
             self.redraw_color_canvas()
 
 
+class DrawingCanvas(tk.Canvas):
+    def __init__(self, master=None, **kw):
+        super().__init__(master=master, **kw)
+
+        # x = 800, y = 766
+
+        self._FOREGROUND_COLOR = "#ffffff"
+        self._SHADOW_COLOR = "#000000"
+
+        self.draw_coordination_help()
+
+    def clear_canvas(self):
+        self.delete(tk.ALL)
+    
+    def draw_coordination_help(self):
+        '''
+        Draw coordination and rotation info on canvas
+        '''
+        #Magic numbers everywhere until I can figure out how to update ui positions before
+        #these these functions are called
+
+        #Draw coordinate
+        self.__draw_text(32, 15, ("-1, -1", 13, "bold"))
+        self.__draw_text(775, 15, ("1, -1", 13, "bold"))
+        self.__draw_text(32, 750, ("-1, 1", 13, "bold"))
+        self.__draw_text(775, 750, ("1, 1", 13, "bold"))
+
+    
+        #Draw angle info
+        graphics_len = 60
+
+        self.create_oval(
+            400 - graphics_len, 383 - graphics_len, 400 + graphics_len, 383 + graphics_len,
+            outline = self._FOREGROUND_COLOR)
+
+        self.create_line(
+            400, 383, 400 + graphics_len, 383, 
+            width = 1, 
+            fill = self._FOREGROUND_COLOR)
+
+        self.create_line(
+            400, 383 - graphics_len, 400, 383, 
+            width = 1, 
+            fill = self._FOREGROUND_COLOR)
+
+        self.__draw_text(400 + graphics_len + 12, 383, ("0°", 10, "normal"), False)
+        self.__draw_text(400, 383 - graphics_len - 12, ("90°", 10, "normal"), False)
+
+    def __draw_text(self, x, y, text_options, shadow = True):
+        
+        if shadow:
+            self.create_text(
+                x + 3, y + 3, 
+                text = text_options[0], 
+                font = ("", text_options[1], text_options[2]),
+                fill = self._SHADOW_COLOR)
+        
+        self.create_text(
+            x, y, 
+            text = text_options[0], 
+            font = ("", text_options[1], text_options[2]),
+            fill = self._FOREGROUND_COLOR)
+            

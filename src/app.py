@@ -332,12 +332,11 @@ class DrawButtonFrame(tk.Frame):
         super().__init__(master=master, **kw)
 
         #Setup draw button icon
-        icon_image = tk.PhotoImage(file = cwd + r"\resources\drawing.png")
+        icon_image = tk.PhotoImage(file = cwd + r"\resources\drawing-button.png")
 
         #Setup button
         self.draw_button = tk.Button(
-            self, 
-            text = "Draw",
+            self,
             font = ("", 14, "bold"),
             bg = "grey",
             fg = "white",
@@ -349,6 +348,15 @@ class DrawButtonFrame(tk.Frame):
         #Placement
         self.draw_button.pack(fill = tk.BOTH, expand = True, padx = 5, pady = (5, 0))
 
+class CanvasFrame(tk.Frame):
+    def __init__(self, master=None, **kw):
+        super().__init__(master=master, **kw)
+
+        #Setup draw canvas
+        self.draw_canvas = widgets.DrawingCanvas(self, bg = "#212121")
+
+        #Placement
+        self.draw_canvas.pack(fill = tk.BOTH, expand = True)
 
 app = tk.Tk()
 app.title("Lindenmayer Systems Illustrator")
@@ -357,7 +365,7 @@ app.resizable(0,0)
 
 #Setup main frames
 control_frame = tk.Frame(app, padx = 5, pady = 5)
-drawing_frame = tk.Frame(app, bg = "#212121")
+drawing_frame = CanvasFrame(app)
 
 #Setup widgets
 variables_frame = VariablesFrame(control_frame)
