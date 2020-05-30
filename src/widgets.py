@@ -314,6 +314,13 @@ class DrawingCanvas(tk.Canvas):
         self._FOREGROUND_COLOR = "#ffffff"
         self._SHADOW_COLOR = "#000000"
 
+        #Setup context option menu
+        self.contextmenu = tk.Menu(self, tearoff = 0)
+        self.contextmenu.add_command(label = "Clear canvas", command = self.on_contextmenu_clear_option_clicked)
+
+        #Setup event bindings
+        self.bind("<Button-3>", self.on_canvas_right_mouse_click)
+
         self.draw_coordination_help()
 
     def clear_canvas(self):
@@ -376,4 +383,10 @@ class DrawingCanvas(tk.Canvas):
             font = ("", text_options[1], text_options[2]),
             fill = self._FOREGROUND_COLOR)
 
-    
+    def on_canvas_right_mouse_click(self, event):
+        self.contextmenu.tk_popup(event.x_root + 45, event.y_root + 11, 0)
+        
+
+    def on_contextmenu_clear_option_clicked(self):
+        self.clear_canvas()
+        self.draw_coordination_help()

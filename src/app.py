@@ -548,6 +548,10 @@ class TopMenu(tk.Menu):
         #Overwrite the ui widget settings
         overwrite_settings(lsysobj)
 
+        #Clear drawing canvas & redraw coordination help
+        drawing_frame.draw_canvas.clear_canvas()
+        drawing_frame.draw_canvas.draw_coordination_help()
+
     def save_lsystem_file(self):
         
         #Check if ./data/my_lsystems folder exists, if not then create it
