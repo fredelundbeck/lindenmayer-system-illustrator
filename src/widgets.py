@@ -5,9 +5,11 @@ application.
 
 import tkinter as tk
 import tkinter.colorchooser as colorchooser
+import tkinter.filedialog as filedialog
 import tkinter.ttk as ttk
 import utilities as util
 import math 
+import os
 
 class ScrollableTreeviewFrame(tk.Frame):
     '''
@@ -367,10 +369,14 @@ class TopMenu(tk.Menu):
     def __init__(self, master=None, **kw):
         super().__init__(master=master, **kw)
 
+        #Create a variable to hold the last opened file path
+        #Assign the path first to be the cwd\..\data\l-systems_files folder
+        self.last_opened_file_path = os.path.split(os.getcwd())[0] + r"\data\l-systems_files"
+
         #Create pulldown menus
         filemenu = tk.Menu(self, tearoff = 0)
-        filemenu.add_command(label = "Open l-system")
-        filemenu.add_command(label = "Save l-system")
+        filemenu.add_command(label = "Open l-system", command = self.open_lsystem_file)
+        filemenu.add_command(label = "Save l-system", command = self.save_lsystem_file)
         filemenu.add_separator()
         filemenu.add_command(label = "Exit", command = master.quit)
 
@@ -380,5 +386,17 @@ class TopMenu(tk.Menu):
         #Add pulldown menus to top-level menu
         self.add_cascade(label = "File", menu = filemenu)
         self.add_cascade(label = "Help", menu = helpmenu)
+
+    def open_lsystem_file(self):
+
+        #Open file dialog window and return chosen filename (full path)
+        file = filedialog.askopenfilename(
+            initialdir = self.last_opened_file_path,
+            title = "Select an L-System json file",
+            filetypes = [("json files", "*.json")])
+        
+
+    def save_lsystem_file(self):
+        pass
 
     
