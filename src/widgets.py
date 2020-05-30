@@ -386,7 +386,6 @@ class DrawingCanvas(tk.Canvas):
     def on_canvas_right_mouse_click(self, event):
         self.contextmenu.tk_popup(event.x_root + 45, event.y_root + 11, 0)
         
-
     def on_contextmenu_clear_option_clicked(self):
         self.clear_canvas()
         self.draw_coordination_help()
