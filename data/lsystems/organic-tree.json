@@ -1,0 +1,31 @@
+{
+    "symbols": "defaults",
+    "rules": [
+        {
+            "X": "F-[[>6X]+X]+F[>6+FX]->X"
+        },
+        {
+            "F": "FF"
+        }
+    ],
+    "settings": {
+        "axiom": "X",
+        "position": {
+            "x": -0.1,
+            "y": 0.95
+        },
+        "angle": 90,
+        "turn_angle": 22,
+        "iterations": 7,
+        "thickness": 1,
+        "step_length": 2.2,
+        "start_color": 0,
+        "color_palette": [
+            "#663300",
+            "#804000",
+            "#04d73a",
+            "#4fdb5d",
+            "#334c3b"
+        ]
+    }
+}

@@ -1,0 +1,33 @@
+{
+    "symbols": "defaults",
+    "rules": [
+        {
+            "F": ">"
+        },
+        {
+            "X": "-FX++FY-"
+        },
+        {
+            "Y": "+FX--FY+"
+        }
+    ],
+    "settings": {
+        "axiom": "FX",
+        "position": {
+            "x": 0.1,
+            "y": 0.4
+        },
+        "angle": 90,
+        "turn_angle": 45,
+        "iterations": 8,
+        "thickness": 2,
+        "step_length": 25.0,
+        "start_color": 0,
+        "color_palette": [
+            "#4e88f3",
+            "#e85972",
+            "#5ce460",
+            "#e47b5c"
+        ]
+    }
+}

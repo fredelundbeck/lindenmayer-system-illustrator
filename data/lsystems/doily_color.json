@@ -1,0 +1,26 @@
+{
+    "symbols": "defaults",
+    "rules": [
+        {
+            "F": "-F[<16--F--F]++F--F+"
+        }
+    ],
+    "settings": {
+        "axiom": "%150F--F--F--F--F--F",
+        "position": {
+            "x": 0.825,
+            "y": -0.2
+        },
+        "angle": 90,
+        "turn_angle": 30,
+        "iterations": 4,
+        "thickness": 1,
+        "step_length": 7.0,
+        "start_color": 0,
+        "color_palette": [
+            "#5f89fb",
+            "#3c6ec3",
+            "#3ee126"
+        ]
+    }
+}

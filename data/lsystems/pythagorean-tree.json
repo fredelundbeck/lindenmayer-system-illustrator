@@ -1,0 +1,27 @@
+{
+    "symbols": "defaults",
+    "rules": [
+        {
+            "X": ">2@[-FX]+FX"
+        }
+    ],
+    "settings": {
+        "axiom": "++FX",
+        "position": {
+            "x": 0.0,
+            "y": 0.9
+        },
+        "angle": 180,
+        "turn_angle": 45,
+        "iterations": 8,
+        "thickness": 1,
+        "step_length": 300.0,
+        "start_color": 0,
+        "color_palette": [
+            "#dabed9",
+            "#bd7dec",
+            "#131f33",
+            "#a969b4"
+        ]
+    }
+}

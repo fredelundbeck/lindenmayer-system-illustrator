@@ -1,0 +1,28 @@
+{
+    "symbols": "defaults",
+    "rules": [
+        {
+            "F": "F[>25+F]F[>21-F][>39>F]"
+        }
+    ],
+    "settings": {
+        "axiom": "F",
+        "position": {
+            "x": 0.0,
+            "y": 0.9
+        },
+        "angle": 90,
+        "turn_angle": 22,
+        "iterations": 4,
+        "thickness": 2,
+        "step_length": 22.0,
+        "start_color": 0,
+        "color_palette": [
+            "#b0a864",
+            "#881199",
+            "#8ce016",
+            "#7e6b18",
+            "#685433"
+        ]
+    }
+}

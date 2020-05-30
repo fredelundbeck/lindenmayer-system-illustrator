@@ -1,0 +1,33 @@
+{
+    "symbols": "defaults",
+    "rules": [
+        {
+            "X": "<5FX+FX+FXFYFX+FXFY-FY-FY-"
+        },
+        {
+            "Y": ">5+FX+FX+FXFY-FYFXFY-FY-FY"
+        },
+        {
+            "F": " "
+        }
+    ],
+    "settings": {
+        "axiom": "X",
+        "position": {
+            "x": -0.365,
+            "y": 0.0
+        },
+        "angle": 0,
+        "turn_angle": 90,
+        "iterations": 4,
+        "thickness": 1,
+        "step_length": 5.5,
+        "start_color": 0,
+        "color_palette": [
+            "#9ae1fc",
+            "#119e40",
+            "#4fec11",
+            "#27511f"
+        ]
+    }
+}

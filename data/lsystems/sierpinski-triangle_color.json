@@ -1,0 +1,36 @@
+{
+    "symbols": "defaults",
+    "rules": [
+        {
+            "F": "FXF"
+        },
+        {
+            "X": "+FLXRF-FLXR<F-F>LXR<F+"
+        },
+        {
+            "L": ">6"
+        },
+        {
+            "R": "<6"
+        }
+    ],
+    "settings": {
+        "axiom": "F",
+        "position": {
+            "x": 0.8,
+            "y": 0.6
+        },
+        "angle": 180,
+        "turn_angle": 120,
+        "iterations": 6,
+        "thickness": 1,
+        "step_length": 10.0,
+        "start_color": 0,
+        "color_palette": [
+            "#168575",
+            "#8936c1",
+            "#7fbfd9",
+            "#9ed206"
+        ]
+    }
+}

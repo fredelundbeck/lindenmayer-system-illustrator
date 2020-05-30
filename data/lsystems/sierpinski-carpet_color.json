@@ -1,0 +1,31 @@
+{
+    "symbols": "defaults",
+    "rules": [
+        {
+            "F": "<F+F-F-F-G+F+F+F-F"
+        },
+        {
+            "G": "GGG"
+        }
+    ],
+    "settings": {
+        "axiom": "F",
+        "position": {
+            "x": -0.8,
+            "y": 0.0
+        },
+        "angle": 0,
+        "turn_angle": 90,
+        "iterations": 4,
+        "thickness": 1,
+        "step_length": 8.0,
+        "start_color": 0,
+        "color_palette": [
+            "#168575",
+            "#8936c1",
+            "#7fbfd9",
+            "#9ed206",
+            "#ed5854"
+        ]
+    }
+}
