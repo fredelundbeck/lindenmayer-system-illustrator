@@ -8,8 +8,8 @@ import lsysfilehandler as fh
 import widgets as w
 import os
 
-#Get current working directory
-cwd = os.path.split(os.getcwd())[0]
+#Get project root directory
+ROOT_DIR = os.path.split(os.path.dirname(os.path.abspath(__file__)))[0]
 
 class VariablesFrame(tk.Frame):
     def __init__(self, master=None, **kw):
@@ -450,7 +450,7 @@ class DrawButtonFrame(tk.Frame):
         super().__init__(master=master, **kw)
 
         #Setup draw button icon
-        icon_image = tk.PhotoImage(file = cwd + r"\resources\drawing-button.png")
+        icon_image = tk.PhotoImage(file = ROOT_DIR + r"\resources\drawing-button.png")
 
         #Setup button
         self.draw_button = tk.Button(
@@ -511,13 +511,14 @@ class TopMenu(tk.Menu):
     '''
     The top-level menu widget of the program.
     '''
-
+    
     def __init__(self, master=None, **kw):
         super().__init__(master=master, **kw)
 
         #Create a variable to hold the last opened file path
         #Assign the path first to be the cwd\..\data\l-systems_files folder
-        self.last_opened_file_path = os.path.split(os.getcwd())[0] + r"\data\l-systems_files"
+        self.last_opened_file_path = ROOT_DIR + r"\data\lsystems"
+        self.user_save_file_path = ROOT_DIR + r"\data\my_lsystems"
 
         #Create pulldown menus
         filemenu = tk.Menu(self, tearoff = 0)
@@ -547,13 +548,29 @@ class TopMenu(tk.Menu):
         #Overwrite the ui widget settings
         overwrite_settings(lsysobj)
 
-
     def save_lsystem_file(self):
         
+        #Check if ./data/my_lsystems folder exists, if not then create it
+        if not os.path.exists(self.user_save_file_path):
+            os.makedirs(self.user_save_file_path)
+
         #Open a file dialog window and return the chosen directory path
-        path = filedialog.askdirectory(
-            initialdir = self.last_opened_file_path
-        )
+        path = filedialog.asksaveasfilename(
+            initialdir = self.user_save_file_path,
+            defaultextension = ".json",
+            filetypes = [("Json file", "*.json")])
+        
+        #Lazy try catch wrap for now
+        #try:
+            #Create lsystem file object
+        lsys_obj = create_lsystem_file_object()
+
+            #Save the file
+        fh.save_lsystem(lsys_obj, path)
+
+        #except Exception:
+        #    messagebox.showerror("Error creating file", ("Error occurred while trying to save the lsystem!\n"
+        #        "Make sure every form contains valid data"))
 
 def overwrite_settings(lsys_dic):
     '''
@@ -590,7 +607,39 @@ def overwrite_settings(lsys_dic):
     except Exception:
         messagebox.showerror("Invalid lsystem file", "Couldn't convert file correctly!")
 
+def create_lsystem_file_object():
+    '''
+    Groups together all the widget data and
+    returns an lsystem object (dict) with all
+    the data.
+    '''
 
+    #Prep rules data for weird json dictionary list (rules : [ {x1 : y1}, {x2 : y2} ]), not exactly beautiful
+    rules_list = []
+    for rule in rules_frame._rules:
+        rules_list.append({rule[0] : rule[1]})
+
+    #Create dict that will hold all lsystem data
+    lsys_dict = { 
+        "symbols" : "defaults",
+        "rules" : rules_list,
+        "settings" : {
+            "axiom" : settings_frame.axiom_entry.get(),
+            "position" : {
+                "x" : float(settings_frame.position_x_entry.get()),
+                "y" : float(settings_frame.position_y_entry.get()),
+            },
+            "angle" : int(settings_frame.angle_entry.get()),
+            "turn_angle" : int(settings_frame.turn_angle_entry.get()),
+            "iterations" : settings_frame.iteration_var.get(),
+            "thickness" : settings_frame.line_thickness_var.get(),
+            "step_length" : float(settings_frame.step_length_entry.get()),
+            "start_color" : int(settings_frame.start_color_entry.get()),
+            "color_palette" : settings_frame.color_palette_options._colors
+        }
+    }
+
+    return lsys_dict
 
 #Create the top-level widget of TK
 app = tk.Tk()
