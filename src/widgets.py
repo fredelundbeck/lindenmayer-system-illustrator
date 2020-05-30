@@ -10,6 +10,11 @@ import utilities as util
 import math 
 
 class ScrollableTreeviewFrame(tk.Frame):
+    '''
+    A Treeview widget with a vertical scrollbar attached
+    to it in order to make the list inside the treeview
+    scrollable.
+    '''
     def __init__(self, master=None, **kw):
         super().__init__(master=master, **kw)
 
@@ -62,6 +67,13 @@ class ScrollableTreeviewFrame(tk.Frame):
         return rows
 
 class Entry(tk.Entry):
+    '''
+    Standard Entry widget for the project. Besides from styling
+    a max_chars argument can be passed setting how many characters
+    are allowed inside the entry. If that amount is surpassed the
+    input will automatically be trimmed down to the max_chars length.
+    '''
+
     def __init__(self, master = None, max_chars = None, **kw):
         super().__init__(master=master, **kw)
 
@@ -82,6 +94,13 @@ class Entry(tk.Entry):
 
 
 class NumberEntry(Entry):
+    '''
+    This Entry widget is supposed to only take numerical input, meaning
+    no non-numerical characters (A-Za-z!#& etc) are allowed. If a 
+    non-numerical character is entered the widget background will 
+    change to red in order to let the user know.
+    '''
+
     def __init__(self, master = None, max_chars = None, **kw):
         super().__init__(master=master, max_chars = max_chars, **kw)
 
@@ -99,6 +118,13 @@ class NumberEntry(Entry):
             self["bg"] = "#ffaaaa"
 
 class NonNumberEntry(Entry):
+    '''
+    This Entry widget is supposed to only take text input, meaning
+    no numerical characters. 
+    If a numerical value has been entered the background color of 
+    the widget will change to red, in order to let the user know.
+    '''
+
     def __init__(self, master=None, max_chars = None, **kw):
         super().__init__(master=master, max_chars = max_chars, **kw)
 
@@ -121,6 +147,19 @@ class NonNumberEntry(Entry):
 
 
 class ColorPaletteOptions(tk.Frame):
+    '''
+    A widget for choosing the color palette for 
+    drawing the L-system.
+
+    The color step interval has been chosen
+    to be 256, meaning given the least amount
+    of colors in order to perform RGB interpolation (2 colors)
+    we have 256 shades of color between the two.
+
+    The maximum number of colors allowed in the pallette (9)
+    then leaves us with 32 different shades between each color.
+    '''
+
     def __init__(self, master=None, **kw):
         super().__init__(master=master, **kw)
         
@@ -246,6 +285,13 @@ class ColorPaletteOptions(tk.Frame):
 
 
 class DrawingCanvas(tk.Canvas):
+    '''
+    The canvas widget for displaying the L-systems.
+
+    A lot of magic numbers are used to setup this widget because
+    I haven't find a good way to update the positions before 
+    initializing it.
+    '''
     def __init__(self, master=None, **kw):
         super().__init__(master=master, **kw)
 
@@ -294,7 +340,15 @@ class DrawingCanvas(tk.Canvas):
         self.__draw_text(400, 383 - graphics_len - 12, ("90°", 10, "normal"), False)
 
     def __draw_text(self, x, y, text_options, shadow = True):
-        
+        '''
+        Draws text graphics to the canvas at the given x, y position.
+
+        Text options such as font size, font family etc is passed through the
+        text_options argument.
+
+        The text will be drawn with a shadow if the shadow argument is true.
+        '''
+
         if shadow:
             self.create_text(
                 x + 3, y + 3, 
