@@ -92,7 +92,6 @@ class Entry(tk.Entry):
         if self._max_chars != None and len(self.get()) > self._max_chars:
             self.delete(self._max_chars, tk.END)
 
-
 class NumberEntry(Entry):
     '''
     This Entry widget is supposed to only take numerical input, meaning
@@ -144,7 +143,6 @@ class NonNumberEntry(Entry):
 
     def is_legit(self):
         return self._is_legit
-
 
 class ColorPaletteOptions(tk.Frame):
     '''
@@ -283,7 +281,6 @@ class ColorPaletteOptions(tk.Frame):
             self._colors[color_index] = new_color[1]
             self.redraw_color_canvas()
 
-
 class DrawingCanvas(tk.Canvas):
     '''
     The canvas widget for displaying the L-systems.
@@ -362,3 +359,26 @@ class DrawingCanvas(tk.Canvas):
             font = ("", text_options[1], text_options[2]),
             fill = self._FOREGROUND_COLOR)
             
+class TopMenu(tk.Menu):
+    '''
+    The top-level menu widget of the program.
+    '''
+
+    def __init__(self, master=None, **kw):
+        super().__init__(master=master, **kw)
+
+        #Create pulldown menus
+        filemenu = tk.Menu(self, tearoff = 0)
+        filemenu.add_command(label = "Open l-system")
+        filemenu.add_command(label = "Save l-system")
+        filemenu.add_separator()
+        filemenu.add_command(label = "Exit", command = master.quit)
+
+        helpmenu = tk.Menu(self, tearoff = 0)
+        helpmenu.add_command(label = "About")
+
+        #Add pulldown menus to top-level menu
+        self.add_cascade(label = "File", menu = filemenu)
+        self.add_cascade(label = "Help", menu = helpmenu)
+
+    

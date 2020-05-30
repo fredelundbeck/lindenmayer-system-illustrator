@@ -508,6 +508,10 @@ app.title("Lindenmayer Systems Illustrator")
 app.geometry("1150x770")
 app.resizable(0,0)
 
+#Setup top-level menu
+top_menu = widgets.TopMenu(app)
+app.config(menu = top_menu)
+
 #Setup main frames
 control_frame = tk.Frame(app, padx = 5, pady = 5)
 drawing_frame = CanvasFrame(app)
