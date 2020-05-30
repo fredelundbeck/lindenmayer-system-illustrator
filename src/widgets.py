@@ -60,11 +60,11 @@ class ScrollableTreeviewFrame(tk.Frame):
         for row in self.treeview.get_children():
             self.treeview.delete(row)
     
-    def get_row_values(self):
+    """ def get_row_values(self):
         rows = []
         for row in self.treeview.get_children():
             rows.append(self.treeview.item(row)["values"])
-        return rows
+        return rows """
 
 class Entry(tk.Entry):
     '''

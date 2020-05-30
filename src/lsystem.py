@@ -7,6 +7,15 @@ import math
 from tkinter import Canvas
 
 class LSystem:
+    '''
+    This class represents the L-system.
+
+    Takes an axiom of type string and rules list of tuples list<tuple<string, string>>. 
+
+    Passing an LSystem object to the next() function, iterates on the current state/mutation of
+    the l-system and returns the next iteration.
+    '''
+
     def __init__(self, axiom, rules):
         self.axiom = axiom
         self.rules = rules
@@ -30,6 +39,10 @@ class LSystem:
         return self.current_state
 
 def get_new_position(current_x, current_y, angle, step_length):
+    '''
+    Calculates and returns a new position based on the current position, angle &
+    step length.
+    '''
 
     new_x = math.cos(angle * math.pi / 180) * step_length + current_x
     new_y = math.sin(angle * math.pi / 180) * step_length + current_y
@@ -37,6 +50,11 @@ def get_new_position(current_x, current_y, angle, step_length):
     return (new_x, new_y)
 
 def get_new_color(color_num, colors):
+    '''
+    Takes in the current color value and the list of colors
+    available (the palette) and then returns the correct interpolated color
+    expressed in a hex string e.g #003fef
+    '''
 
     interval_length = 256 / (len(colors) - 1) #9 colors = 32 interval
     color_a_index = math.floor(color_num / interval_length)
@@ -63,6 +81,10 @@ def get_new_color(color_num, colors):
 def draw_lsystem(canvas : Canvas, lsystem, symbols, start_pos, 
                 start_angle, turn_angle_amount, start_step, start_thickness,
                 colors = ["#FFFFFF"], start_color_num = 0):
+    '''
+    This function starts the drawing algorithm and displays it to the
+    given canvas widget argument.
+    '''
 
     multiple_colors = len(colors) > 1
 
