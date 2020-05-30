@@ -1,8 +1,11 @@
 import tkinter as tk
 import tkinter.ttk as ttk
-import widgets
+import tkinter.filedialog as filedialog
+import tkinter.messagebox as messagebox
 import lsystem as lsys
 import utilities as util
+import lsysfilehandler as fh
+import widgets as w
 import os
 
 #Get current working directory
@@ -32,8 +35,8 @@ class VariablesFrame(tk.Frame):
         self.operation_label = tk.Label(self.input_frame, text = "f(x):")
 
         #Setup entries
-        self.variable_entry = widgets.NonNumberEntry(self.input_frame, 1, width = 6)
-        self.value_entry = widgets.NumberEntry(self.input_frame, width = 6)
+        self.variable_entry = w.NonNumberEntry(self.input_frame, 1, width = 6)
+        self.value_entry = w.NumberEntry(self.input_frame, width = 6)
         self.operation_combobox = ttk.Combobox(
             self.input_frame,
             values = ["Move pen down", "Move pen up", "Turn right", "Turn left", "Multiply step", 
@@ -47,7 +50,7 @@ class VariablesFrame(tk.Frame):
         self.load_defaults_button = tk.Button(self.buttons_frame, text = "Load defaults")
 
         #Setup treeview
-        self.treeview = widgets.ScrollableTreeviewFrame(self.label_frame)
+        self.treeview = w.ScrollableTreeviewFrame(self.label_frame)
         self.treeview.configure_treeview(
             columns = ["sym", "op", "def"],
             show = "headings",
@@ -132,7 +135,6 @@ class VariablesFrame(tk.Frame):
         
         return dictionary
 
-
 class RulesFrame(tk.Frame):
     def __init__(self, master=None, **kw):
         super().__init__(master=master, **kw)
@@ -171,14 +173,14 @@ class RulesFrame(tk.Frame):
             command = self.on_delete_button_click)
 
         #Setup entries
-        self.variable_entry = widgets.NonNumberEntry(self.entries_frame, 1, width = 2)
-        self.mutation_entry = widgets.Entry(self.entries_frame)
+        self.variable_entry = w.NonNumberEntry(self.entries_frame, 1, width = 2)
+        self.mutation_entry = w.Entry(self.entries_frame)
 
         #Setup labels
         self.var_label = tk.Label(self.entries_frame, text = "Var:")
 
         #Setup treeview
-        self.treeview = widgets.ScrollableTreeviewFrame(self.label_frame)
+        self.treeview = w.ScrollableTreeviewFrame(self.label_frame)
         self.treeview.configure_treeview(
             columns = ["var", "mut"],
             show = "headings",
@@ -358,35 +360,37 @@ class SettingsFrame(tk.Frame):
         self.start_color_label = tk.Label(self.input_frame, text = "Start color:")
 
         #Setup entries
-        self.axiom_entry = widgets.Entry(self.input_frame, width = 8)
-        self.position_x_entry = widgets.NumberEntry(self.input_frame, width = 8)
-        self.position_y_entry = widgets.NumberEntry(self.input_frame, width = 8)
-        self.angle_entry = widgets.NumberEntry(self.input_frame, width = 8)
-        self.turn_angle_entry = widgets.NumberEntry(self.input_frame, width = 8)
+        self.axiom_entry = w.Entry(self.input_frame, width = 8)
+        self.position_x_entry = w.NumberEntry(self.input_frame, width = 8)
+        self.position_y_entry = w.NumberEntry(self.input_frame, width = 8)
+        self.angle_entry = w.NumberEntry(self.input_frame, width = 8)
+        self.turn_angle_entry = w.NumberEntry(self.input_frame, width = 8)
 
-        var = tk.IntVar(value = 4)
+        self.iteration_var = tk.IntVar(value = 4)
         self.iteration_spinbox = tk.Spinbox(
             self.input_frame, 
             width = 8, 
             from_ = 1, 
             to = 10,
-            textvariable = var,
+            textvariable = self.iteration_var,
             state = "readonly",
             cursor = "arrow")
 
+        self.line_thickness_var = tk.IntVar(value = 1)
         self.line_thickness_spinbox = tk.Spinbox(
             self.input_frame, 
             width = 8,
             from_ = 1,
             to = 100,
+            textvariable = self.line_thickness_var,
             state = "readonly",
             cursor = "arrow")
 
-        self.step_length_entry = widgets.NumberEntry(self.input_frame, width = 8)
-        self.start_color_entry = widgets.NumberEntry(self.input_frame, 3, width = 8)
+        self.step_length_entry = w.NumberEntry(self.input_frame, width = 8)
+        self.start_color_entry = w.NumberEntry(self.input_frame, 3, width = 8)
 
         #Setup ColorPaletteOptions
-        self.color_palette_options = widgets.ColorPaletteOptions(self.color_palette_label_frame)
+        self.color_palette_options = w.ColorPaletteOptions(self.color_palette_label_frame)
 
         #Insert default entry values
         self.position_x_entry.insert(0, 0)
@@ -437,7 +441,7 @@ class SettingsFrame(tk.Frame):
             "turn_angle" : int(self.turn_angle_entry.get()),
             "iteration" : int(self.iteration_spinbox.get()),
             "line_thickness" : int(self.line_thickness_spinbox.get()),
-            "step_length" : int(self.step_length_entry.get()),
+            "step_length" : float(self.step_length_entry.get()),
             "start_color" : int(self.start_color_entry.get())
         }
 
@@ -498,18 +502,104 @@ class CanvasFrame(tk.Frame):
         super().__init__(master=master, **kw)
 
         #Setup draw canvas
-        self.draw_canvas = widgets.DrawingCanvas(self, bg = "#212121")
+        self.draw_canvas = w.DrawingCanvas(self, bg = "#212121")
 
         #Placement
         self.draw_canvas.pack(fill = tk.BOTH, expand = True)
 
+class TopMenu(tk.Menu):
+    '''
+    The top-level menu widget of the program.
+    '''
+
+    def __init__(self, master=None, **kw):
+        super().__init__(master=master, **kw)
+
+        #Create a variable to hold the last opened file path
+        #Assign the path first to be the cwd\..\data\l-systems_files folder
+        self.last_opened_file_path = os.path.split(os.getcwd())[0] + r"\data\l-systems_files"
+
+        #Create pulldown menus
+        filemenu = tk.Menu(self, tearoff = 0)
+        filemenu.add_command(label = "Open l-system", command = self.open_lsystem_file)
+        filemenu.add_command(label = "Save l-system", command = self.save_lsystem_file)
+        filemenu.add_separator()
+        filemenu.add_command(label = "Exit", command = master.quit)
+
+        helpmenu = tk.Menu(self, tearoff = 0)
+        helpmenu.add_command(label = "About")
+
+        #Add pulldown menus to top-level menu
+        self.add_cascade(label = "File", menu = filemenu)
+        self.add_cascade(label = "Help", menu = helpmenu)
+
+    def open_lsystem_file(self):
+        
+        #Open a file dialog window and return chosen filename (full path)
+        file = filedialog.askopenfilename(
+            initialdir = self.last_opened_file_path,
+            title = "Select an L-System json file",
+            filetypes = [("json files", "*.json")])
+        
+        #Return a py object from the json file with lsysfilehandler module
+        lsysobj = fh.load_lsystem(file)
+
+        #Overwrite the ui widget settings
+        overwrite_settings(lsysobj)
+
+
+    def save_lsystem_file(self):
+        
+        #Open a file dialog window and return the chosen directory path
+        path = filedialog.askdirectory(
+            initialdir = self.last_opened_file_path
+        )
+
+def overwrite_settings(lsys_dic):
+    '''
+    Takes in a l-system file object and
+    overwrites current settings (labels etc) with
+    the ones in the file object.
+    '''
+
+    #Lazy way of loading defaults variables
+    variables_frame.load_defaults_button_clicked_event(None)
+
+    try:
+        #Really messy way to handle rules but due
+        #to json not allowing lists of tuples we 
+        #have to use this hacky approach
+        rules_frame._rules.clear()
+
+        for rule_dic in lsys_dic["rules"]:
+            for key, val in rule_dic.items():
+                rules_frame.insert_rule(key, val)
+
+        #Set settings
+        settings_frame.axiom_entry.set_new_value(lsys_dic["settings"]["axiom"])
+        settings_frame.position_x_entry.set_new_value(lsys_dic["settings"]["position"]["x"])
+        settings_frame.position_y_entry.set_new_value(lsys_dic["settings"]["position"]["y"])
+        settings_frame.angle_entry.set_new_value(lsys_dic["settings"]["angle"])
+        settings_frame.turn_angle_entry.set_new_value(lsys_dic["settings"]["turn_angle"])
+        settings_frame.iteration_var.set(lsys_dic["settings"]["iterations"])
+        settings_frame.line_thickness_var.set(lsys_dic["settings"]["thickness"])
+        settings_frame.step_length_entry.set_new_value(lsys_dic["settings"]["step_length"])
+        settings_frame.start_color_entry.set_new_value(lsys_dic["settings"]["start_color"])
+        settings_frame.color_palette_options.set_colors_force(lsys_dic["settings"]["color_palette"])
+        
+    except Exception:
+        messagebox.showerror("Invalid lsystem file", "Couldn't convert file correctly!")
+
+
+
+#Create the top-level widget of TK
 app = tk.Tk()
 app.title("Lindenmayer Systems Illustrator")
 app.geometry("1150x770")
 app.resizable(0,0)
 
 #Setup top-level menu
-top_menu = widgets.TopMenu(app)
+top_menu = TopMenu(app)
 app.config(menu = top_menu)
 
 #Setup main frames
@@ -531,4 +621,5 @@ rules_frame.pack(fill = tk.X)
 settings_frame.pack(fill = tk.X)
 draw_button_frame.pack(fill = tk.BOTH, expand = True)
 
+#Start the mainloop of TK
 app.mainloop()

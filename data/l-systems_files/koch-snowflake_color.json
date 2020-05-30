@@ -1,0 +1,26 @@
+{
+    "symbols" : "defaults",
+    "rules" : [
+        {"F": "<F+F--F+F"}
+    ],
+    "settings" : {
+        "axiom" : "F--F--F",
+        "position" : {
+            "x" : -0.83,
+            "y" : 0.48
+        },
+        "angle" : 0,
+        "turn_angle" : 60,
+        "iterations" : 4,
+        "thickness" : 1,
+        "step_length" : 8,
+        "start_color" : 0,
+        "color_palette" : [
+            "#f333ff",
+            "#f3ff00",
+            "#0023ff",
+            "#00ffff",
+            "#f333ff"
+        ]
+    }
+}

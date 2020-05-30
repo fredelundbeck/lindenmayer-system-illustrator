@@ -89,6 +89,10 @@ class Entry(tk.Entry):
 
         self.bind("<KeyRelease>", self.on_entry_keyrelease)
 
+    def set_new_value(self, value):
+        self.delete(0, tk.END)
+        self.insert(0, value)
+
     def on_entry_keyrelease(self, event):
         
         if self._max_chars != None and len(self.get()) > self._max_chars:
@@ -236,6 +240,17 @@ class ColorPaletteOptions(tk.Frame):
         self._colors.clear()
         self._colors.append(self._DEFAULT_COLOR)
 
+    def set_colors_force(self, colors):
+
+        #Clear _colors list
+        self._colors.clear()
+
+        #Add given colors list to _colors list
+        self._colors.extend(colors)
+
+        #Update color canvas
+        self.redraw_color_canvas()
+
     def randomize_palette(self, amount):
         '''
         Generate a new random color palette
@@ -360,43 +375,5 @@ class DrawingCanvas(tk.Canvas):
             text = text_options[0], 
             font = ("", text_options[1], text_options[2]),
             fill = self._FOREGROUND_COLOR)
-            
-class TopMenu(tk.Menu):
-    '''
-    The top-level menu widget of the program.
-    '''
-
-    def __init__(self, master=None, **kw):
-        super().__init__(master=master, **kw)
-
-        #Create a variable to hold the last opened file path
-        #Assign the path first to be the cwd\..\data\l-systems_files folder
-        self.last_opened_file_path = os.path.split(os.getcwd())[0] + r"\data\l-systems_files"
-
-        #Create pulldown menus
-        filemenu = tk.Menu(self, tearoff = 0)
-        filemenu.add_command(label = "Open l-system", command = self.open_lsystem_file)
-        filemenu.add_command(label = "Save l-system", command = self.save_lsystem_file)
-        filemenu.add_separator()
-        filemenu.add_command(label = "Exit", command = master.quit)
-
-        helpmenu = tk.Menu(self, tearoff = 0)
-        helpmenu.add_command(label = "About")
-
-        #Add pulldown menus to top-level menu
-        self.add_cascade(label = "File", menu = filemenu)
-        self.add_cascade(label = "Help", menu = helpmenu)
-
-    def open_lsystem_file(self):
-
-        #Open file dialog window and return chosen filename (full path)
-        file = filedialog.askopenfilename(
-            initialdir = self.last_opened_file_path,
-            title = "Select an L-System json file",
-            filetypes = [("json files", "*.json")])
-        
-
-    def save_lsystem_file(self):
-        pass
 
     
